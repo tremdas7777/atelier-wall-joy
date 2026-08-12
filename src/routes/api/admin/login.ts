@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/admin/login")({
         if (!ok) return Response.json({ error: "Senha incorreta." }, { status: 401 });
 
         const token = signSession();
-        const res = Response.json({ ok: true });
+        const res = Response.json({ ok: true, token });
         res.headers.set("set-cookie", buildAdminCookieHeader(token, request));
         return res;
       },

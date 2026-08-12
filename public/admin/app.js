@@ -23,13 +23,38 @@
   const $ = (sel) => document.querySelector(sel);
   const loginScreen = $("#login-screen");
   const app = $("#app");
+  const TOKEN_KEY = "atelier_admin_token";
+
+  function getStoredToken() {
+    try {
+      return sessionStorage.getItem(TOKEN_KEY) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function setStoredToken(token) {
+    try {
+      if (token) sessionStorage.setItem(TOKEN_KEY, token);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function authHeaders(extra = {}) {
+    const headers = { ...extra };
+    const token = getStoredToken();
+    if (token) headers["Authorization"] = "Bearer " + token;
+    return headers;
+  }
 
   async function api(path, opts = {}) {
     let res;
     try {
       res = await fetch(API + path, {
         credentials: "same-origin",
-        headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+        headers: authHeaders({ "Content-Type": "application/json", ...(opts.headers || {}) }),
         ...opts,
       });
     } catch {
@@ -43,6 +68,7 @@
       : {};
     if (!res.ok) {
       if (res.status === 401 && path !== "/login") {
+        setStoredToken("");
         showLogin();
       }
       if (!ct.includes("application/json")) {
@@ -104,10 +130,11 @@
     const err = $("#login-error");
     err.classList.add("hidden");
     try {
-      await api("/login", {
+      const data = await api("/login", {
         method: "POST",
         body: JSON.stringify({ password: fd.get("password") }),
       });
+      if (data.token) setStoredToken(data.token);
       await api("/me");
       showApp();
     } catch (e) {
@@ -117,6 +144,7 @@
   });
 
   $("#logout-btn").addEventListener("click", async () => {
+    setStoredToken("");
     await api("/logout", { method: "POST" });
     location.reload();
   });
@@ -268,6 +296,7 @@
         const res = await fetch("/api/admin/upload-product", {
           method: "POST",
           credentials: "same-origin",
+          headers: authHeaders(),
           body: fd,
         });
         const data = await res.json().catch(() => ({}));
