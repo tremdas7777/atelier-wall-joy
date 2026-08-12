@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as ApiTrackRouteImport } from './routes/api/track'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
@@ -29,6 +30,11 @@ import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
@@ -109,6 +115,7 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/api/checkout'
     | '/api/track'
     | '/api/admin/analytics'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/api/checkout'
     | '/api/track'
     | '/api/admin/analytics'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/api/checkout'
     | '/api/track'
     | '/api/admin/analytics'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   ApiTrackRoute: typeof ApiTrackRoute
   ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checkout': {
@@ -357,6 +377,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   ApiTrackRoute: ApiTrackRoute,
   ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
