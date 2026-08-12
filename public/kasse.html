@@ -16,10 +16,6 @@
     <a href="index.html"><img src="assets/artelier-logo-tkncU2qU.webp" alt="Artelier Wallpapers" class="h-16 w-auto md:h-20"/></a>
     <div class="flex items-center gap-4">
       <a href="index.html#oferta" class="text-[12px] uppercase tracking-[0.25em] hover:text-gold" data-i18n="common.backOffer">Zurück zum Angebot</a>
-      <div class="lang-switch" role="group" data-i18n-aria="lang.label" aria-label="Sprache">
-        <button type="button" class="lang-switch-btn is-active" data-lang="de" aria-pressed="true">DE</button>
-        <button type="button" class="lang-switch-btn" data-lang="en" aria-pressed="false">EN</button>
-      </div>
     </div>
   </header>
 
@@ -106,7 +102,11 @@
             body: JSON.stringify({
               plan: plan,
               email: fd.get("em"),
-              name: fd.get("name")
+              name: fd.get("name"),
+              country: window.ATELIER_I18N.getCountry(),
+              language: window.ATELIER_I18N.getLang(),
+              productName: planData.name,
+              productDescription: planData.desc
             })
           });
           var json = await res.json();

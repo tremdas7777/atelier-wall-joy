@@ -655,29 +655,44 @@ export async function createCheckoutSession(args: {
   successUrl: string;
   cancelUrl: string;
   orderUid: string;
+  currency?: string;
+  amountCents?: number;
+  locale?: string;
+  productName?: string;
+  productDescription?: string;
+  eurAmountCents?: number;
 }) {
   const secret = await stripeSecret();
   if (!secret) throw new Error("Stripe ist nicht konfiguriert.");
   const cfg = await planConfig(args.plan);
+  const currency = (args.currency || "eur").toLowerCase();
+  const amountCents = args.amountCents ?? cfg.amountCents;
+  const stripeLocale = args.locale || "auto";
 
   const body = new URLSearchParams();
   body.set("mode", "payment");
   body.set("customer_email", args.email);
   body.set("client_reference_id", args.orderUid);
   body.set("line_items[0][quantity]", "1");
-  body.set("line_items[0][price_data][currency]", "eur");
-  body.set("line_items[0][price_data][unit_amount]", String(cfg.amountCents));
-  body.set("line_items[0][price_data][product_data][name]", cfg.name);
-  body.set("line_items[0][price_data][product_data][description]", cfg.description);
+  body.set("line_items[0][price_data][currency]", currency);
+  body.set("line_items[0][price_data][unit_amount]", String(amountCents));
+  body.set("line_items[0][price_data][product_data][name]", args.productName || cfg.name);
+  body.set(
+    "line_items[0][price_data][product_data][description]",
+    args.productDescription || cfg.description,
+  );
   body.set("line_items[0][price_data][product_data][metadata][plan]", cfg.plan);
   body.set("metadata[plan]", cfg.plan);
   body.set("metadata[order_uid]", args.orderUid);
   body.set("metadata[customer_name]", args.customerName || "");
+  if (args.eurAmountCents != null) {
+    body.set("metadata[eur_amount_cents]", String(args.eurAmountCents));
+  }
   body.set("billing_address_collection", "auto");
   body.set("allow_promotion_codes", "true");
   body.set("success_url", args.successUrl);
   body.set("cancel_url", args.cancelUrl);
-  body.set("locale", "de");
+  body.set("locale", stripeLocale);
 
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",

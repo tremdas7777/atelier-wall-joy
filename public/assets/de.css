@@ -106,6 +106,20 @@
   background: var(--gold);
   color: var(--background);
 }
+.lang-switch-select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.35rem 1.5rem 0.35rem 0.65rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23c9a962' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+}
 
 /* Success / thank-you page */
 .success-page {

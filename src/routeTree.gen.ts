@@ -24,6 +24,7 @@ import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/product
 import { Route as ApiAdminSettingsRouteImport } from './routes/api/admin/settings'
 import { Route as ApiAdminUploadProductRouteImport } from './routes/api/admin/upload-product'
 import { Route as ApiDownloadTokenRouteImport } from './routes/api/download/$token'
+import { Route as ApiLocaleDetectRouteImport } from './routes/api/locale/detect'
 import { Route as ApiOrderStatusRouteImport } from './routes/api/order/status'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 
@@ -102,6 +103,11 @@ const ApiDownloadTokenRoute = ApiDownloadTokenRouteImport.update({
   path: '/api/download/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLocaleDetectRoute = ApiLocaleDetectRouteImport.update({
+  id: '/api/locale/detect',
+  path: '/api/locale/detect',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOrderStatusRoute = ApiOrderStatusRouteImport.update({
   id: '/api/order/status',
   path: '/api/order/status',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/order/status': typeof ApiOrderStatusRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/order/status': typeof ApiOrderStatusRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/order/status': typeof ApiOrderStatusRoute
   '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/api/admin/settings'
     | '/api/admin/upload-product'
     | '/api/download/$token'
+    | '/api/locale/detect'
     | '/api/order/status'
     | '/api/public/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/api/admin/settings'
     | '/api/admin/upload-product'
     | '/api/download/$token'
+    | '/api/locale/detect'
     | '/api/order/status'
     | '/api/public/stripe/webhook'
   id:
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/api/admin/settings'
     | '/api/admin/upload-product'
     | '/api/download/$token'
+    | '/api/locale/detect'
     | '/api/order/status'
     | '/api/public/stripe/webhook'
   fileRoutesById: FileRoutesById
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   ApiAdminSettingsRoute: typeof ApiAdminSettingsRoute
   ApiAdminUploadProductRoute: typeof ApiAdminUploadProductRoute
   ApiDownloadTokenRoute: typeof ApiDownloadTokenRoute
+  ApiLocaleDetectRoute: typeof ApiLocaleDetectRoute
   ApiOrderStatusRoute: typeof ApiOrderStatusRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDownloadTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/locale/detect': {
+      id: '/api/locale/detect'
+      path: '/api/locale/detect'
+      fullPath: '/api/locale/detect'
+      preLoaderRoute: typeof ApiLocaleDetectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/order/status': {
       id: '/api/order/status'
       path: '/api/order/status'
@@ -391,6 +411,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSettingsRoute: ApiAdminSettingsRoute,
   ApiAdminUploadProductRoute: ApiAdminUploadProductRoute,
   ApiDownloadTokenRoute: ApiDownloadTokenRoute,
+  ApiLocaleDetectRoute: ApiLocaleDetectRoute,
   ApiOrderStatusRoute: ApiOrderStatusRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
