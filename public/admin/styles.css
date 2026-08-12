@@ -1,13 +1,18 @@
 :root {
-  --bg: #0c0c0c;
-  --panel: #141414;
-  --border: #2a2a2a;
-  --text: #f4f4f4;
-  --muted: #9a9a9a;
-  --gold: #c9a962;
-  --danger: #e57373;
-  --ok: #81c784;
-  --font: "Segoe UI", system-ui, sans-serif;
+  --bg: #03251c;
+  --grad-hero: radial-gradient(ellipse at top, #0f7559 0%, #064538 55%, #03251c 100%);
+  --panel: color-mix(in srgb, #082b22 88%, transparent);
+  --panel-2: rgba(3, 37, 28, 0.55);
+  --border: #c9a84c38;
+  --text: #f4f1ea;
+  --muted: #d6d1c2;
+  --gold: #c9a84c;
+  --gold-soft: #f0d78c;
+  --danger: #e88f8f;
+  --ok: #7fd6a9;
+  --shadow-gold: 0 20px 60px -20px #c9a84c59;
+  --font: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
 }
 
 * { box-sizing: border-box; }
@@ -15,8 +20,15 @@ body {
   margin: 0;
   font-family: var(--font);
   background: var(--bg);
+  background-image: var(--grad-hero);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100dvh;
+}
+
+h1, h2, h3, .stat strong {
+  font-family: var(--font-serif);
+  letter-spacing: 0.01em;
 }
 
 .hidden { display: none !important; }
@@ -41,14 +53,50 @@ body {
 
 .login-card {
   width: min(400px, 100%);
+  box-shadow: var(--shadow-gold);
+  text-align: left;
 }
-.login-card h1 { margin: 0 0 1.5rem; font-weight: 500; }
+.login-card h1 { margin: 0 0 1.5rem; font-weight: 500; font-size: 2rem; }
+.login-card .brand-mark {
+  width: 68px;
+  height: auto;
+  margin: 0 0 1rem;
+  opacity: 0.95;
+}
+.login-card label { display: block; font-size: 0.82rem; color: var(--muted); }
+.login-card input {
+  display: block;
+  width: 100%;
+  margin: 0.4rem 0 1rem;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  color: var(--text);
+  font: inherit;
+}
+.login-card input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.login-card button[type="submit"] {
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: #06281f;
+}
 
 .card, .panel {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
+  backdrop-filter: blur(12px);
 }
 
 #app {
