@@ -28,7 +28,7 @@ const PLAN_DESCRIPTIONS: Record<Plan, string> = {
     "100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.",
 };
 
-/* ---------------- Self-contained typed Supabase admin client ---------------- */
+/* ---------------- Supabase admin client (loosely typed, self-contained) ---------------- */
 
 export type Json =
   | string
@@ -38,103 +38,11 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-interface AtelierDatabase {
-  public: {
-    Tables: {
-      settings: {
-        Row: { key: string; value: string };
-        Insert: { key: string; value: string };
-        Update: { key?: string; value?: string };
-      };
-      orders: {
-        Row: {
-          id: number;
-          order_uid: string;
-          email: string;
-          customer_name: string | null;
-          plan: string;
-          amount_cents: number;
-          currency: string;
-          status: string;
-          stripe_session_id: string | null;
-          stripe_payment_intent: string | null;
-          download_token: string | null;
-          download_expires_at: string | null;
-          email_sent_at: string | null;
-          created_at: string;
-          paid_at: string | null;
-        };
-        Insert: {
-          order_uid: string;
-          email: string;
-          customer_name?: string | null;
-          plan: string;
-          amount_cents: number;
-          currency?: string;
-          status?: string;
-          stripe_session_id?: string | null;
-          download_token?: string;
-          download_expires_at?: string;
-        };
-        Update: Partial<AtelierDatabase["public"]["Tables"]["orders"]["Insert"]> & {
-          status?: string;
-          stripe_payment_intent?: string | null;
-          paid_at?: string | null;
-        };
-      };
-      page_views: {
-        Row: {
-          id: number;
-          path: string;
-          referrer: string | null;
-          user_agent: string | null;
-          ip_hash: string | null;
-          created_at: string;
-        };
-        Insert: {
-          path: string;
-          referrer?: string | null;
-          user_agent?: string | null;
-          ip_hash?: string | null;
-        };
-        Update: Record<string, never>;
-      };
-      checkout_events: {
-        Row: {
-          id: number;
-          event_type: string;
-          plan: string | null;
-          email: string | null;
-          metadata: Json | null;
-          created_at: string;
-        };
-        Insert: {
-          event_type: string;
-          plan?: string | null;
-          email?: string | null;
-          metadata?: Json;
-          created_at?: string;
-        };
-        Update: Record<string, never>;
-      };
-    };
-    Views: Record<string, never>;
-    Functions: {
-      orders_status_counts: {
-        Args: Record<string, never>;
-        Returns: { status: string; count: number }[];
-      };
-    };
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-}
-
 function isNewKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
 
-let _admin: ReturnType<typeof createClient<AtelierDatabase>> | undefined;
+let _admin: ReturnType<typeof createClient> | undefined;
 
 function admin() {
   if (_admin) return _admin;
@@ -143,7 +51,7 @@ function admin() {
   if (!url || !key) {
     throw new Error("Supabase nicht konfiguriert (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
   }
-  _admin = createClient<AtelierDatabase>(url, key, {
+  _admin = createClient(url, key, {
     global: {
       fetch: ((input: RequestInfo | URL, init?: RequestInit) => {
         const headers = new Headers(
