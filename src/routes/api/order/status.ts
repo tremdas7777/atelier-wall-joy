@@ -5,18 +5,28 @@ export const Route = createFileRoute("/api/order/status")({
     handlers: {
       GET: async ({ request }) => {
         const lib = await import("@/lib/atelier.server");
-        const { getOrderBySessionId, retrieveCheckoutSession, fulfillPaidOrder, buildOrderStatus, isStripeConfigured } = lib;
+        const {
+          getOrderBySessionId,
+          retrieveCheckoutSession,
+          fulfillPaidOrder,
+          buildOrderStatusWithDelivery,
+          isStripeConfigured,
+          isCheckoutSessionPaid,
+          resolveBaseUrl,
+        } = lib;
 
         const sessionId = new URL(request.url).searchParams.get("session_id");
         if (!sessionId) return Response.json({ error: "session_id required" }, { status: 400 });
 
-        const baseUrl = new URL(request.url).origin;
+        const baseUrl = resolveBaseUrl(request);
         let order = await getOrderBySessionId(String(sessionId));
 
         if (await isStripeConfigured()) {
           const session = await retrieveCheckoutSession(String(sessionId));
-          if (session && session.payment_status === "paid") {
-            if (!order) return Response.json({ error: "Bestellung nicht gefunden." }, { status: 404 });
+          if (session && isCheckoutSessionPaid(session)) {
+            if (!order) {
+              return Response.json({ error: "Bestellung nicht gefunden." }, { status: 404 });
+            }
             if (order.status !== "paid") {
               try {
                 order = await fulfillPaidOrder(
@@ -29,18 +39,21 @@ export const Route = createFileRoute("/api/order/status")({
                 );
               } catch (err) {
                 console.error("fulfill error:", err);
-                return Response.json(
-                  { error: err instanceof Error ? err.message : "Erfüllung fehlgeschlagen." },
-                  { status: 500 },
-                );
+                order = await getOrderBySessionId(String(sessionId));
+                if (!order || order.status !== "paid") {
+                  return Response.json(
+                    { error: err instanceof Error ? err.message : "Erfüllung fehlgeschlagen." },
+                    { status: 500 },
+                  );
+                }
               }
             }
-            return Response.json(buildOrderStatus(order, baseUrl));
+            return Response.json(await buildOrderStatusWithDelivery(order, baseUrl));
           }
         }
 
         if (!order) return Response.json({ error: "Bestellung nicht gefunden." }, { status: 404 });
-        return Response.json(buildOrderStatus(order, baseUrl));
+        return Response.json(await buildOrderStatusWithDelivery(order, baseUrl));
       },
     },
   },

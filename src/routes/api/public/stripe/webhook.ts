@@ -5,7 +5,13 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
     handlers: {
       POST: async ({ request }) => {
         const lib = await import("@/lib/atelier.server");
-        const { constructWebhookEvent, getOrderBySessionId, fulfillPaidOrder, trackCheckoutEvent } = lib;
+        const {
+          constructWebhookEvent,
+          fulfillPaidOrder,
+          trackCheckoutEvent,
+          isCheckoutSessionPaid,
+          resolveBaseUrl,
+        } = lib;
 
         const signature = request.headers.get("stripe-signature") || "";
         const rawBody = await request.text();
@@ -20,24 +26,30 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
           });
         }
 
-        if (event.type === "checkout.session.completed") {
+        const paidSessionEvents = new Set([
+          "checkout.session.completed",
+          "checkout.session.async_payment_succeeded",
+        ]);
+
+        if (paidSessionEvents.has(event.type)) {
           const obj = event.data.object;
-          try {
-            await fulfillPaidOrder(
-              {
-                id: obj.id,
-                payment_intent: obj.payment_intent ?? null,
-                metadata: obj.metadata ?? null,
-              },
-              new URL(request.url).origin,
-            );
-          } catch (err) {
-            console.error("webhook fulfill error:", err);
-            // still acknowledge to avoid retry storms; log already captured
-            await trackCheckoutEvent("webhook_error", null, null, {
-              session_id: obj.id,
-              error: err instanceof Error ? err.message : "unknown",
-            });
+          if (isCheckoutSessionPaid(obj)) {
+            try {
+              await fulfillPaidOrder(
+                {
+                  id: obj.id,
+                  payment_intent: obj.payment_intent ?? null,
+                  metadata: obj.metadata ?? null,
+                },
+                resolveBaseUrl(request),
+              );
+            } catch (err) {
+              console.error("webhook fulfill error:", err);
+              await trackCheckoutEvent("webhook_error", null, null, {
+                session_id: obj.id,
+                error: err instanceof Error ? err.message : "unknown",
+              });
+            }
           }
         }
 

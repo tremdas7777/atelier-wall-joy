@@ -154,8 +154,15 @@
         var hint = PLAN_HINT[d.plan] || "Deine Wallpapers warten auf dich.";
         document.getElementById("success-subtitle").textContent = hint;
 
-        btn.href = d.downloadUrl || "#";
-        if (d.planName) sub.textContent = d.planName + " · ZIP";
+        if (d.downloadUrl && d.downloadReady) {
+          btn.href = d.downloadUrl;
+          btn.classList.remove("is-pending");
+          if (d.planName) sub.textContent = d.planName + " · ZIP";
+        } else {
+          btn.href = "#";
+          btn.classList.add("is-pending");
+          sub.textContent = "Download wird vorbereitet — bitte in Kürze neu laden.";
+        }
       }
 
       function demoData() {
@@ -194,20 +201,14 @@
       }
 
       function handleStatus(d) {
-        if (d.paid && d.downloadUrl && d.downloadReady) {
+        if (d.paid) {
           showSuccess(d);
-          return;
-        }
-        if (d.paid && d.downloadReady === false) {
-          showError(
-            "Zahlung erhalten, aber die Datei ist momentan nicht verfügbar. " +
-            "Schreib uns mit deiner Bestellnummer <strong>" + (d.orderUid || "") + "</strong>: " +
-            '<a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
-          );
-          return;
-        }
-        if (d.paid && !d.downloadUrl) {
-          schedulePoll();
+          if (!d.downloadReady) {
+            setTimeout(function () {
+              pollAttempts += 1;
+              if (pollAttempts < maxAttempts) poll();
+            }, 3000);
+          }
           return;
         }
         schedulePoll();
@@ -234,8 +235,8 @@
             if (!res.ok) {
               if (res.status === 404) {
                 showError(
-                  "Bestellung nicht gefunden. Stelle sicher, dass der Server läuft " +
-                  "(<code>npm start</code> auf Port 3000) und du die URL nach dem Stripe-Checkout nutzt."
+                  "Bestellung nicht gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. " +
+                  'Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
                 );
                 return;
               }
@@ -250,8 +251,8 @@
           .catch(function () {
             if (pollAttempts >= 3) {
               showError(
-                "Verbindung zum Server fehlgeschlagen. Starte <code>npm start</code> und öffne " +
-                "<code>http://localhost:3000</code> — nicht <code>python -m http.server</code>."
+                "Verbindung zum Server fehlgeschlagen. Lade die Seite neu oder kontaktiere " +
+                '<a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>.'
               );
               return;
             }

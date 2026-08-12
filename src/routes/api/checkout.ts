@@ -14,6 +14,7 @@ export const Route = createFileRoute("/api/checkout")({
           createOrder,
           trackCheckoutEvent,
           isStripeConfigured,
+          resolveBaseUrl,
         } = lib;
 
         let body: { plan?: string; email?: string; name?: string } = {};
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/api/checkout")({
 
         const normalizedPlan = (plan === "premium" ? "premium" : "essentiell") as "essentiell" | "premium";
         const cfg = await planConfig(normalizedPlan);
-        const baseUrl = new URL(request.url).origin;
+        const baseUrl = resolveBaseUrl(request);
         const orderUid = newOrderUid();
 
         if (!(await isStripeConfigured())) {

@@ -152,6 +152,18 @@ export async function planConfig(plan: Plan) {
 
 /* ---------------- Orders ---------------- */
 
+export function resolveBaseUrl(request: Request): string {
+  const url = new URL(request.url);
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  if (forwardedHost) {
+    const host = forwardedHost.split(",")[0]?.trim() || url.host;
+    const proto = forwardedProto?.split(",")[0]?.trim() || url.protocol.replace(":", "") || "https";
+    return `${proto}://${host}`;
+  }
+  return url.origin;
+}
+
 export function newOrderUid() {
   return "AW-" + randomBytes(4).toString("hex").toUpperCase();
 }
@@ -430,11 +442,12 @@ export async function fulfillPaidOrder(
   order = await getOrderBySessionId(session.id);
   if (!order) throw new Error("Bestellung nach Erfüllung nicht gefunden.");
 
-  if (!(await productFileExists(order.plan as Plan))) {
+  const hasFile = await productFileExists(order.plan as Plan);
+  if (!hasFile) {
     await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, {
       order_uid: order.order_uid,
     });
-    throw new Error("Produktdatei fehlt für Plan: " + order.plan);
+    return order;
   }
 
   await trackCheckoutEvent("download_ready", order.plan, order.email, {
@@ -594,10 +607,18 @@ export async function retrieveCheckoutSession(sessionId: string) {
   const json = (await res.json()) as {
     id: string;
     payment_status: string;
+    status?: string;
     payment_intent: string | null;
-    metadata?: { order_uid?: string } | null;
+    metadata?: { order_uid?: string; plan?: string } | null;
   };
   return json;
+}
+
+export function isCheckoutSessionPaid(session: {
+  payment_status?: string;
+  status?: string;
+}): boolean {
+  return session.payment_status === "paid" || session.status === "complete";
 }
 
 export async function constructWebhookEvent(rawBody: string, signatureHeader: string) {
@@ -633,6 +654,7 @@ export async function constructWebhookEvent(rawBody: string, signatureHeader: st
       object: {
         id: string;
         payment_status?: string;
+        status?: string;
         payment_intent?: string | null;
         metadata?: { order_uid?: string } | null;
       };
@@ -792,8 +814,10 @@ export function buildOrderStatus(
     download_token: string | null;
   },
   baseUrl: string,
+  opts?: { downloadReady?: boolean },
 ) {
   const paid = order.status === "paid";
+  const fileReady = opts?.downloadReady ?? paid;
   return {
     status: order.status,
     email: order.email,
@@ -801,9 +825,24 @@ export function buildOrderStatus(
     planName: planDisplayName(order.plan),
     orderUid: order.order_uid,
     paid,
-    downloadUrl: paid ? orderDownloadUrl(order, baseUrl) : null,
-    downloadReady: paid,
+    downloadUrl: paid && fileReady ? orderDownloadUrl(order, baseUrl) : null,
+    downloadReady: paid && fileReady,
   };
+}
+
+export async function buildOrderStatusWithDelivery(
+  order: {
+    status: string;
+    email: string;
+    plan: string;
+    order_uid: string;
+    download_token: string | null;
+  },
+  baseUrl: string,
+) {
+  const paid = order.status === "paid";
+  const fileReady = paid ? await productFileExists(order.plan as Plan) : false;
+  return buildOrderStatus(order, baseUrl, { downloadReady: fileReady });
 }
 
 export function sanitizeOrder(order: {
