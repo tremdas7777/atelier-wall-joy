@@ -42,7 +42,8 @@ function isNewKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
 
-let _admin: ReturnType<typeof createClient> | undefined;
+// Loosely typed (any schema) so table ops don't depend on generated types.
+let _admin: SupabaseClient<any, any, any> | undefined;
 
 function admin() {
   if (_admin) return _admin;
