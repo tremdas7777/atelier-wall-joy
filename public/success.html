@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de-DE">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Zahlung bestätigt — Atelier Wallpapers</title>
+  <link rel="icon" href="favicon.png" type="image/png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;display=swap"/>
+  <link rel="stylesheet" href="assets/styles.css"/>
+  <link rel="stylesheet" href="assets/de.css"/>
+</head>
+<body class="legal-page success-page text-foreground">
+  <header class="success-header mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+    <a href="index.html"><img src="assets/artelier-logo-tkncU2qU.webp" alt="Atelier Wallpapers" class="h-16 w-auto md:h-20"/></a>
+    <a href="index.html" class="success-header-link">Zur Galerie</a>
+  </header>
+
+  <main class="success-main mx-auto w-full max-w-lg px-6 pb-16">
+    <!-- Loading -->
+    <div id="state-loading" class="success-card text-center">
+      <div class="success-loading-ring mx-auto" aria-hidden="true"></div>
+      <p id="loading-msg" class="success-loading-text mt-6">Zahlung wird bestätigt…</p>
+      <p class="success-loading-hint mt-2">Einen Moment — wir bereiten deinen Download vor.</p>
+    </div>
+
+    <!-- Success -->
+    <div id="state-success" class="hidden">
+      <div class="success-hero text-center">
+        <div class="success-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <p class="success-eyebrow">Zahlung bestätigt</p>
+        <h1 class="success-title font-serif">Danke für deinen Kauf!</h1>
+        <p id="success-subtitle" class="success-subtitle">Deine Kollektion ist bereit zum Download.</p>
+      </div>
+
+      <div class="success-card mt-8">
+        <div class="success-order">
+          <div class="success-order-row">
+            <span>Produkt</span>
+            <strong id="order-plan">—</strong>
+          </div>
+          <div class="success-order-row">
+            <span>Bestellnummer</span>
+            <strong id="order-id">—</strong>
+          </div>
+          <div class="success-order-row">
+            <span>E-Mail</span>
+            <strong id="order-email">—</strong>
+          </div>
+        </div>
+
+        <div class="success-download-wrap mt-6">
+          <div class="success-glow" aria-hidden="true"></div>
+          <a id="download-btn" href="#" class="success-download-btn">
+            <span class="success-download-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </span>
+            <span class="success-download-text">
+              <strong>Jetzt herunterladen</strong>
+              <span id="download-sub">ZIP · Sofort verfügbar</span>
+            </span>
+            <span class="success-download-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+
+        <p class="success-footnote mt-5">
+          Der Link ist <strong>7 Tage gültig</strong>. Speichere diese Seite im Browser, falls du später erneut herunterladen möchtest.
+        </p>
+      </div>
+
+      <p class="success-help mt-6 text-center">
+        Fragen? <a href="hilfe.html">Download-Hilfe</a> ·
+        <a href="mailto:kontakt@atelierwallpapers.de">Support</a>
+      </p>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="success-card hidden text-center">
+      <div class="success-check is-error" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <h2 class="success-error-title font-serif mt-5">Etwas ist schiefgelaufen</h2>
+      <p id="error-msg" class="success-error mt-3"></p>
+      <button type="button" id="retry-btn" class="success-retry mt-6">Seite neu laden</button>
+    </div>
+  </main>
+
+  <footer class="success-footer border-t border-white/10 px-6 py-8 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+    <p>© 2026 Atelier Wallpapers</p>
+  </footer>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var sessionId = params.get("session_id");
+      var isPreview = params.get("preview") === "1";
+      var pollAttempts = 0;
+      var maxAttempts = 40;
+
+      var elLoading = document.getElementById("state-loading");
+      var elSuccess = document.getElementById("state-success");
+      var elError = document.getElementById("state-error");
+      var loadingMsg = document.getElementById("loading-msg");
+      var btn = document.getElementById("download-btn");
+      var sub = document.getElementById("download-sub");
+      var retryBtn = document.getElementById("retry-btn");
+
+      var PLAN_HINT = {
+        essentiell: "100 Wallpapers in 4K · Laptop & Smartphone",
+        premium: "200+ Wallpapers · Ultrawide, iPad & Bonus-Guide",
+      };
+
+      retryBtn.addEventListener("click", function () {
+        location.reload();
+      });
+
+      function showLoading() {
+        elLoading.classList.remove("hidden");
+        elSuccess.classList.add("hidden");
+        elError.classList.add("hidden");
+      }
+
+      function showError(html) {
+        elLoading.classList.add("hidden");
+        elSuccess.classList.add("hidden");
+        elError.classList.remove("hidden");
+        document.getElementById("error-msg").innerHTML = html;
+      }
+
+      function showSuccess(d) {
+        elLoading.classList.add("hidden");
+        elError.classList.add("hidden");
+        elSuccess.classList.remove("hidden");
+
+        document.getElementById("order-plan").textContent = d.planName || "—";
+        document.getElementById("order-id").textContent = d.orderUid || "—";
+        document.getElementById("order-email").textContent = d.email || "—";
+
+        var hint = PLAN_HINT[d.plan] || "Deine Wallpapers warten auf dich.";
+        document.getElementById("success-subtitle").textContent = hint;
+
+        btn.href = d.downloadUrl || "#";
+        if (d.planName) sub.textContent = d.planName + " · ZIP";
+      }
+
+      function demoData() {
+        return {
+          downloadUrl: "#",
+          planName: "Essenzielle Kollektion",
+          plan: "essentiell",
+          orderUid: "AW-DEMO1234",
+          email: "max@beispiel.de",
+        };
+      }
+
+      if (isPreview) {
+        showSuccess(demoData());
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+        });
+        return;
+      }
+
+      if (!sessionId) {
+        showError(
+          "Keine Bestellung gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. " +
+          'Sonst: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
+        );
+        return;
+      }
+
+      function fetchStatus() {
+        return fetch("/api/order/status?session_id=" + encodeURIComponent(sessionId))
+          .then(function (r) {
+            return r.json().then(function (d) {
+              return { ok: r.ok, status: r.status, data: d };
+            });
+          });
+      }
+
+      function handleStatus(d) {
+        if (d.paid && d.downloadUrl && d.downloadReady) {
+          showSuccess(d);
+          return;
+        }
+        if (d.paid && d.downloadReady === false) {
+          showError(
+            "Zahlung erhalten, aber die Datei ist momentan nicht verfügbar. " +
+            "Schreib uns mit deiner Bestellnummer <strong>" + (d.orderUid || "") + "</strong>: " +
+            '<a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
+          );
+          return;
+        }
+        if (d.paid && !d.downloadUrl) {
+          schedulePoll();
+          return;
+        }
+        schedulePoll();
+      }
+
+      function schedulePoll() {
+        pollAttempts += 1;
+        if (pollAttempts >= maxAttempts) {
+          showError(
+            "Die Bestätigung dauert ungewöhnlich lange. Bitte lade die Seite neu. " +
+            'Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
+          );
+          return;
+        }
+        loadingMsg.textContent =
+          pollAttempts > 6 ? "Fast fertig…" : "Zahlung wird bestätigt…";
+        setTimeout(poll, pollAttempts > 12 ? 4000 : 2500);
+      }
+
+      function poll() {
+        showLoading();
+        fetchStatus()
+          .then(function (res) {
+            if (!res.ok) {
+              if (res.status === 404) {
+                showError(
+                  "Bestellung nicht gefunden. Stelle sicher, dass der Server läuft " +
+                  "(<code>npm start</code> auf Port 3000) und du die URL nach dem Stripe-Checkout nutzt."
+                );
+                return;
+              }
+              throw new Error((res.data && res.data.error) || "Fehler " + res.status);
+            }
+            if (res.data.paid) {
+              handleStatus(res.data);
+              return;
+            }
+            schedulePoll();
+          })
+          .catch(function () {
+            if (pollAttempts >= 3) {
+              showError(
+                "Verbindung zum Server fehlgeschlagen. Starte <code>npm start</code> und öffne " +
+                "<code>http://localhost:3000</code> — nicht <code>python -m http.server</code>."
+              );
+              return;
+            }
+            schedulePoll();
+          });
+      }
+
+      poll();
+    })();
+  </script>
+</body>
+</html>
