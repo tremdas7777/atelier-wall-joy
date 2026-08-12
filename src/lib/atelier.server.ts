@@ -48,7 +48,7 @@ let _admin: SupabaseClient<any, any, any> | undefined;
 function admin() {
   if (_admin) return _admin;
   const url = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  const key = resolveSupabaseServiceKey();
   if (!url || !key) {
     throw new Error("Supabase nicht konfiguriert (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
   }
@@ -599,11 +599,29 @@ export async function constructWebhookEvent(rawBody: string, signatureHeader: st
 /* ---------------- Admin auth (single password + signed cookie) ---------------- */
 
 const COOKIE_NAME = "atelier_admin";
+const COOKIE_MAX_AGE = 86400;
+
+function resolveSupabaseServiceKey(): string | undefined {
+  return (
+    process.env["SUPABASE_SERVICE_ROLE_KEY"] ||
+    process.env["SUPABASE_SECRET_KEY"] ||
+    undefined
+  );
+}
+
+function resolveJwtSecret(): string {
+  const explicit = process.env["JWT_SECRET"];
+  if (explicit) return explicit;
+  const projectId =
+    process.env["SUPABASE_PROJECT_ID"] || process.env["VITE_SUPABASE_PROJECT_ID"];
+  if (projectId) {
+    return createHash("sha256").update(`atelier-admin-jwt:${projectId}`).digest("hex");
+  }
+  throw new Error("JWT_SECRET nicht konfiguriert.");
+}
 
 function jwtSecret() {
-  const s = process.env["JWT_SECRET"];
-  if (!s) throw new Error("JWT_SECRET nicht konfiguriert.");
-  return s;
+  return resolveJwtSecret();
 }
 
 function b64url(input: string | Buffer) {
@@ -627,7 +645,13 @@ export function verifySession(token: string | undefined | null): boolean {
   } catch {
     return false;
   }
-  const expected = createHmac("sha256", jwtSecret()).update(payloadStr).digest();
+  let secret: string;
+  try {
+    secret = jwtSecret();
+  } catch {
+    return false;
+  }
+  const expected = createHmac("sha256", secret).update(payloadStr).digest();
   let sigBuf: Buffer;
   try {
     sigBuf = Buffer.from(sigB64, "base64url");
@@ -650,11 +674,33 @@ export function getAdminCookieName() {
 export function getAdminToken(request: Request): string | undefined {
   const cookie = request.headers.get("cookie") || "";
   const match = cookie.match(/(?:^|;\s*)atelier_admin=([^;]+)/);
-  return match?.[1];
+  const raw = match?.[1];
+  if (!raw) return undefined;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
 }
 
 export function isAdminAuthorized(request: Request): boolean {
   return verifySession(getAdminToken(request));
+}
+
+export function buildAdminCookieHeader(token: string, request?: Request, maxAge = COOKIE_MAX_AGE): string {
+  const secure =
+    request &&
+    (new URL(request.url).protocol === "https:" ||
+      request.headers.get("x-forwarded-proto") === "https");
+  const parts = [
+    `${COOKIE_NAME}=${token}`,
+    "HttpOnly",
+    "SameSite=Lax",
+    "Path=/",
+    `Max-Age=${maxAge}`,
+  ];
+  if (secure) parts.push("Secure");
+  return parts.join("; ");
 }
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
@@ -673,7 +719,7 @@ export function maskSecret(value: string | undefined, visible = 4) {
 }
 
 export function ipHash(ip: string) {
-  const salt = process.env["JWT_SECRET"] || "salt";
+  const salt = resolveJwtSecret();
   return createHash("sha256").update(ip + salt).digest("hex").slice(0, 16);
 }
 

@@ -4,7 +4,7 @@ export const Route = createFileRoute("/api/admin/login")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { verifyAdminPassword, signSession, getAdminCookieName } = await import(
+        const { verifyAdminPassword, signSession, buildAdminCookieHeader } = await import(
           "@/lib/atelier.server"
         );
         let body: { password?: string } = {};
@@ -18,10 +18,7 @@ export const Route = createFileRoute("/api/admin/login")({
 
         const token = signSession();
         const res = Response.json({ ok: true });
-        res.headers.set(
-          "set-cookie",
-          `${getAdminCookieName()}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`,
-        );
+        res.headers.set("set-cookie", buildAdminCookieHeader(token, request));
         return res;
       },
     },

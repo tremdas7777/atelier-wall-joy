@@ -34,7 +34,7 @@
       });
     } catch {
       throw new Error(
-        "Servidor indisponível. Rode npm start e acesse http://localhost:3000/admin/"
+        "Servidor indisponível. Rode npm run dev e acesse /admin/ no mesmo servidor."
       );
     }
     const ct = res.headers.get("content-type") || "";
@@ -42,9 +42,12 @@
       ? await res.json().catch(() => ({}))
       : {};
     if (!res.ok) {
+      if (res.status === 401 && path !== "/login") {
+        showLogin();
+      }
       if (!ct.includes("application/json")) {
         throw new Error(
-          "API não encontrada. Use npm start (porta 3000), não python -m http.server."
+          "API não encontrada. Use npm run dev, não python -m http.server."
         );
       }
       throw new Error(data.error || "Falha na requisição");
@@ -82,6 +85,11 @@
     }
   }
 
+  function showLogin() {
+    loginScreen.classList.remove("hidden");
+    app.classList.add("hidden");
+  }
+
   function showApp() {
     loginScreen.classList.add("hidden");
     app.classList.remove("hidden");
@@ -100,6 +108,7 @@
         method: "POST",
         body: JSON.stringify({ password: fd.get("password") }),
       });
+      await api("/me");
       showApp();
     } catch (e) {
       err.textContent = e.message;
@@ -314,25 +323,33 @@
   });
 
   async function loadSettings() {
-    const d = await api("/settings");
-    const form = $("#settings-form");
-    const secretFields = new Set([
-      "stripe_publishable_key",
-      "stripe_secret_key",
-      "stripe_webhook_secret",
-    ]);
-    Object.entries(d.settings).forEach(([key, val]) => {
-      const input = form.elements.namedItem(key);
-      if (!input) return;
-      if (secretFields.has(key)) {
-        input.value = "";
-        input.placeholder = val
-          ? `${val} (configurado — deixe em branco para manter)`
-          : input.placeholder.replace(" (configurado — deixe em branco para manter)", "");
-      } else {
-        input.value = val ?? "";
+    try {
+      const d = await api("/settings");
+      const form = $("#settings-form");
+      const secretFields = new Set([
+        "stripe_publishable_key",
+        "stripe_secret_key",
+        "stripe_webhook_secret",
+      ]);
+      Object.entries(d.settings).forEach(([key, val]) => {
+        const input = form.elements.namedItem(key);
+        if (!input) return;
+        if (secretFields.has(key)) {
+          input.value = "";
+          input.placeholder = val
+            ? `${val} (configurado — deixe em branco para manter)`
+            : input.placeholder.replace(" (configurado — deixe em branco para manter)", "");
+        } else {
+          input.value = val ?? "";
+        }
+      });
+    } catch (e) {
+      const msg = $("#settings-msg");
+      if (msg) {
+        msg.textContent = e.message;
+        msg.style.color = "var(--danger)";
       }
-    });
+    }
   }
 
   setInterval(() => {
