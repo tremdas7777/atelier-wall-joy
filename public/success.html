@@ -11,21 +11,25 @@
   <link rel="stylesheet" href="assets/styles.css"/>
   <link rel="stylesheet" href="assets/de.css"/>
 </head>
-<body class="legal-page success-page text-foreground">
+<body class="legal-page success-page text-foreground" data-i18n-page="success">
   <header class="success-header mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
     <a href="index.html"><img src="assets/artelier-logo-tkncU2qU.webp" alt="Atelier Wallpapers" class="h-16 w-auto md:h-20"/></a>
-    <a href="index.html" class="success-header-link">Zur Galerie</a>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="success-header-link" data-i18n="success.backGallery">Zur Galerie</a>
+      <div class="lang-switch" role="group" data-i18n-aria="lang.label" aria-label="Sprache">
+        <button type="button" class="lang-switch-btn is-active" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" class="lang-switch-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </header>
 
   <main class="success-main mx-auto w-full max-w-lg px-6 pb-16">
-    <!-- Loading -->
     <div id="state-loading" class="success-card text-center">
       <div class="success-loading-ring mx-auto" aria-hidden="true"></div>
-      <p id="loading-msg" class="success-loading-text mt-6">Zahlung wird bestätigt…</p>
-      <p class="success-loading-hint mt-2">Einen Moment — wir bereiten deinen Download vor.</p>
+      <p id="loading-msg" class="success-loading-text mt-6" data-i18n="success.loading">Zahlung wird bestätigt…</p>
+      <p class="success-loading-hint mt-2" data-i18n="success.loadingHint">Einen Moment — wir bereiten deinen Download vor.</p>
     </div>
 
-    <!-- Success -->
     <div id="state-success" class="hidden">
       <div class="success-hero text-center">
         <div class="success-check" aria-hidden="true">
@@ -33,23 +37,23 @@
             <path d="M20 6L9 17l-5-5"/>
           </svg>
         </div>
-        <p class="success-eyebrow">Zahlung bestätigt</p>
-        <h1 class="success-title font-serif">Danke für deinen Kauf!</h1>
-        <p id="success-subtitle" class="success-subtitle">Deine Kollektion ist bereit zum Download.</p>
+        <p class="success-eyebrow" data-i18n="success.eyebrow">Zahlung bestätigt</p>
+        <h1 class="success-title font-serif" data-i18n="success.title">Danke für deinen Kauf!</h1>
+        <p id="success-subtitle" class="success-subtitle" data-i18n="success.subtitleDefault">Deine Kollektion ist bereit zum Download.</p>
       </div>
 
       <div class="success-card mt-8">
         <div class="success-order">
           <div class="success-order-row">
-            <span>Produkt</span>
+            <span data-i18n="success.product">Produkt</span>
             <strong id="order-plan">—</strong>
           </div>
           <div class="success-order-row">
-            <span>Bestellnummer</span>
+            <span data-i18n="success.orderId">Bestellnummer</span>
             <strong id="order-id">—</strong>
           </div>
           <div class="success-order-row">
-            <span>E-Mail</span>
+            <span data-i18n="success.email">E-Mail</span>
             <strong id="order-email">—</strong>
           </div>
         </div>
@@ -65,8 +69,8 @@
               </svg>
             </span>
             <span class="success-download-text">
-              <strong>Jetzt herunterladen</strong>
-              <span id="download-sub">ZIP · Sofort verfügbar</span>
+              <strong data-i18n="success.download">Jetzt herunterladen</strong>
+              <span id="download-sub" data-i18n="success.downloadSub">ZIP · Sofort verfügbar</span>
             </span>
             <span class="success-download-arrow" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -76,27 +80,21 @@
           </a>
         </div>
 
-        <p class="success-footnote mt-5">
-          Der Link ist <strong>7 Tage gültig</strong>. Speichere diese Seite im Browser, falls du später erneut herunterladen möchtest.
-        </p>
+        <p class="success-footnote mt-5" data-i18n-html="success.footnote"></p>
       </div>
 
-      <p class="success-help mt-6 text-center">
-        Fragen? <a href="hilfe.html">Download-Hilfe</a> ·
-        <a href="mailto:kontakt@atelierwallpapers.de">Support</a>
-      </p>
+      <p class="success-help mt-6 text-center" data-i18n-html="success.help"></p>
     </div>
 
-    <!-- Error -->
     <div id="state-error" class="success-card hidden text-center">
       <div class="success-check is-error" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <path d="M12 8v4M12 16h.01"/>
         </svg>
       </div>
-      <h2 class="success-error-title font-serif mt-5">Etwas ist schiefgelaufen</h2>
+      <h2 class="success-error-title font-serif mt-5" data-i18n="success.errorTitle">Etwas ist schiefgelaufen</h2>
       <p id="error-msg" class="success-error mt-3"></p>
-      <button type="button" id="retry-btn" class="success-retry mt-6">Seite neu laden</button>
+      <button type="button" id="retry-btn" class="success-retry mt-6" data-i18n="success.retry">Seite neu laden</button>
     </div>
   </main>
 
@@ -104,6 +102,7 @@
     <p>© 2026 Atelier Wallpapers</p>
   </footer>
 
+  <script src="assets/i18n.js"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
@@ -120,10 +119,13 @@
       var sub = document.getElementById("download-sub");
       var retryBtn = document.getElementById("retry-btn");
 
-      var PLAN_HINT = {
-        essentiell: "100 Wallpapers in 4K · Laptop & Smartphone",
-        premium: "200+ Wallpapers · Ultrawide, iPad & Bonus-Guide",
-      };
+      function i18n() {
+        return window.ATELIER_I18N;
+      }
+
+      function planHint(plan) {
+        return i18n().t("success.planHint." + plan) || i18n().t("success.planHint.default");
+      }
 
       retryBtn.addEventListener("click", function () {
         location.reload();
@@ -150,9 +152,7 @@
         document.getElementById("order-plan").textContent = d.planName || "—";
         document.getElementById("order-id").textContent = d.orderUid || "—";
         document.getElementById("order-email").textContent = d.email || "—";
-
-        var hint = PLAN_HINT[d.plan] || "Deine Wallpapers warten auf dich.";
-        document.getElementById("success-subtitle").textContent = hint;
+        document.getElementById("success-subtitle").textContent = planHint(d.plan);
 
         if (d.downloadUrl && d.downloadReady) {
           btn.href = d.downloadUrl;
@@ -161,41 +161,45 @@
         } else {
           btn.href = "#";
           btn.classList.add("is-pending");
-          sub.textContent = "Download wird vorbereitet — bitte in Kürze neu laden.";
+          sub.textContent = i18n().t("success.downloadPending");
         }
       }
 
       function demoData() {
+        var lang = i18n().getLang();
         return {
           downloadUrl: "/products/essentiell/Atelier-Essential.zip",
           downloadReady: true,
-          planName: "Essenzielle Kollektion",
+          planName: lang === "en" ? "Essential Collection" : "Essenzielle Kollektion",
           plan: "essentiell",
           orderUid: "AW-DEMO1234",
-          email: "max@beispiel.de",
+          email: lang === "en" ? "jane@example.com" : "max@beispiel.de",
         };
       }
 
-      if (isPreview) {
+      function runPreview() {
         showSuccess(demoData());
+      }
+
+      if (isPreview) {
+        document.addEventListener("DOMContentLoaded", runPreview);
+        window.addEventListener("atelier:lang", runPreview);
         return;
       }
 
       if (!sessionId) {
-        showError(
-          "Keine Bestellung gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. " +
-          'Sonst: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
-        );
+        document.addEventListener("DOMContentLoaded", function () {
+          showError(i18n().successMsg("noSession"));
+        });
         return;
       }
 
       function fetchStatus() {
-        return fetch("/api/order/status?session_id=" + encodeURIComponent(sessionId))
-          .then(function (r) {
-            return r.json().then(function (d) {
-              return { ok: r.ok, status: r.status, data: d };
-            });
+        return fetch("/api/order/status?session_id=" + encodeURIComponent(sessionId)).then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, status: r.status, data: d };
           });
+        });
       }
 
       function handleStatus(d) {
@@ -215,14 +219,11 @@
       function schedulePoll() {
         pollAttempts += 1;
         if (pollAttempts >= maxAttempts) {
-          showError(
-            "Die Bestätigung dauert ungewöhnlich lange. Bitte lade die Seite neu. " +
-            'Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
-          );
+          showError(i18n().successMsg("timeout"));
           return;
         }
         loadingMsg.textContent =
-          pollAttempts > 6 ? "Fast fertig…" : "Zahlung wird bestätigt…";
+          pollAttempts > 6 ? i18n().t("success.loadingAlmost") : i18n().t("success.loading");
         setTimeout(poll, pollAttempts > 12 ? 4000 : 2500);
       }
 
@@ -232,13 +233,10 @@
           .then(function (res) {
             if (!res.ok) {
               if (res.status === 404) {
-                showError(
-                  "Bestellung nicht gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. " +
-                  'Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>'
-                );
+                showError(i18n().successMsg("notFound"));
                 return;
               }
-              throw new Error((res.data && res.data.error) || "Fehler " + res.status);
+              throw new Error((res.data && res.data.error) || "Error " + res.status);
             }
             if (res.data.paid) {
               handleStatus(res.data);
@@ -248,17 +246,14 @@
           })
           .catch(function () {
             if (pollAttempts >= 3) {
-              showError(
-                "Verbindung zum Server fehlgeschlagen. Lade die Seite neu oder kontaktiere " +
-                '<a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>.'
-              );
+              showError(i18n().successMsg("connection"));
               return;
             }
             schedulePoll();
           });
       }
 
-      poll();
+      document.addEventListener("DOMContentLoaded", poll);
     })();
   </script>
 </body>

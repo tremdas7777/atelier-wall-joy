@@ -88,6 +88,55 @@
       "social.alt4": "Kundenfoto: Lob für das Kunstwerk auf dem Laptop",
       "social.alt5": "Kundenfoto: Kunstwerk auf dem Laptop",
       "social.alt6": "Kundenfoto: Tutto Passa auf dem Laptop",
+      "common.backOffer": "Zurück zum Angebot",
+      "common.backGallery": "Zur Galerie",
+      "common.gallery": "Galerie",
+      "common.offer": "Angebot",
+      "common.imprint": "Impressum",
+      "checkout.label": "Kasse",
+      "checkout.heading": "Sichere Zahlung in Euro",
+      "checkout.intro": "Digitales Produkt — kein Versand, kein Adresse nötig. Sofortiger Download direkt nach Zahlungsbestätigung.",
+      "checkout.cancelled": "Zahlung abgebrochen. Du kannst es jederzeit erneut versuchen.",
+      "checkout.formTitle": "Deine Daten",
+      "checkout.formHint": "Nur E-Mail und Name — als Infoprodukt brauchen wir keine Lieferadresse.",
+      "checkout.email": "E-Mail",
+      "checkout.name": "Name (optional)",
+      "checkout.emailPlaceholder": "deine@email.de",
+      "checkout.namePlaceholder": "Max Mustermann",
+      "checkout.paySecure": "100 % sichere Zahlung · Stripe · Karte, PayPal, Klarna · EUR",
+      "checkout.orderLabel": "Bestellung",
+      "checkout.total": "Gesamt (EUR)",
+      "checkout.invoiceNote": "Einmalzahlung. Rechnung per E-Mail von Stripe.",
+      "checkout.payBtn": "Weiter zu Stripe — ",
+      "checkout.payRedirect": "Weiterleitung zu Stripe…",
+      "checkout.checkoutFailed": "Checkout fehlgeschlagen",
+      "success.backGallery": "Zur Galerie",
+      "success.loading": "Zahlung wird bestätigt…",
+      "success.loadingHint": "Einen Moment — wir bereiten deinen Download vor.",
+      "success.loadingAlmost": "Fast fertig…",
+      "success.eyebrow": "Zahlung bestätigt",
+      "success.title": "Danke für deinen Kauf!",
+      "success.subtitleDefault": "Deine Kollektion ist bereit zum Download.",
+      "success.product": "Produkt",
+      "success.orderId": "Bestellnummer",
+      "success.email": "E-Mail",
+      "success.download": "Jetzt herunterladen",
+      "success.downloadSub": "ZIP · Sofort verfügbar",
+      "success.downloadPending": "Download wird vorbereitet — bitte in Kürze neu laden.",
+      "success.errorTitle": "Etwas ist schiefgelaufen",
+      "success.retry": "Seite neu laden",
+      "success.planHint.essentiell": "100 Wallpapers in 4K · Laptop & Smartphone",
+      "success.planHint.premium": "200+ Wallpapers · Ultrawide, iPad & Bonus-Guide",
+      "success.planHint.default": "Deine Wallpapers warten auf dich.",
+      "help.title": "Hilfe",
+      "help.intro": "Kurze Antworten zu Download, Geräten und Zahlung — für Kundinnen und Kunden in Deutschland.",
+      "help.h2.download": "Wie erhalte ich die Wallpapers?",
+      "help.h2.devices": "Welche Geräte werden unterstützt?",
+      "help.h2.currency": "In welcher Währung zahle ich?",
+      "help.h2.setup": "Wie setze ich ein Wallpaper?",
+      "help.h2.guarantee": "Garantie",
+      "help.h2.contact": "Kontakt",
+      "footer.widerruf": "Widerruf",
     },
     en: {
       "nav.gallery": "Gallery",
@@ -171,6 +220,55 @@
       "social.alt4": "Customer photo: praise for the artwork on laptop",
       "social.alt5": "Customer photo: artwork on laptop",
       "social.alt6": "Customer photo: Tutto Passa on laptop",
+      "common.backOffer": "Back to offer",
+      "common.backGallery": "Back to gallery",
+      "common.gallery": "Gallery",
+      "common.offer": "Offer",
+      "common.imprint": "Imprint",
+      "checkout.label": "Checkout",
+      "checkout.heading": "Secure payment in Euro",
+      "checkout.intro": "Digital product — no shipping, no address needed. Instant download right after payment confirmation.",
+      "checkout.cancelled": "Payment cancelled. You can try again at any time.",
+      "checkout.formTitle": "Your details",
+      "checkout.formHint": "Email and name only — as a digital product we don't need a delivery address.",
+      "checkout.email": "Email",
+      "checkout.name": "Name (optional)",
+      "checkout.emailPlaceholder": "you@email.com",
+      "checkout.namePlaceholder": "Jane Doe",
+      "checkout.paySecure": "100% secure payment · Stripe · Card, PayPal, Klarna · EUR",
+      "checkout.orderLabel": "Order",
+      "checkout.total": "Total (EUR)",
+      "checkout.invoiceNote": "One-time payment. Invoice by email from Stripe.",
+      "checkout.payBtn": "Continue to Stripe — ",
+      "checkout.payRedirect": "Redirecting to Stripe…",
+      "checkout.checkoutFailed": "Checkout failed",
+      "success.backGallery": "Back to gallery",
+      "success.loading": "Confirming payment…",
+      "success.loadingHint": "One moment — we're preparing your download.",
+      "success.loadingAlmost": "Almost done…",
+      "success.eyebrow": "Payment confirmed",
+      "success.title": "Thank you for your purchase!",
+      "success.subtitleDefault": "Your collection is ready to download.",
+      "success.product": "Product",
+      "success.orderId": "Order number",
+      "success.email": "Email",
+      "success.download": "Download now",
+      "success.downloadSub": "ZIP · Available instantly",
+      "success.downloadPending": "Preparing download — please reload shortly.",
+      "success.errorTitle": "Something went wrong",
+      "success.retry": "Reload page",
+      "success.planHint.essentiell": "100 wallpapers in 4K · Laptop & smartphone",
+      "success.planHint.premium": "200+ wallpapers · Ultrawide, iPad & bonus guide",
+      "success.planHint.default": "Your wallpapers are waiting for you.",
+      "help.title": "Help",
+      "help.intro": "Quick answers about download, devices, and payment.",
+      "help.h2.download": "How do I get the wallpapers?",
+      "help.h2.devices": "Which devices are supported?",
+      "help.h2.currency": "Which currency do I pay in?",
+      "help.h2.setup": "How do I set a wallpaper?",
+      "help.h2.guarantee": "Guarantee",
+      "help.h2.contact": "Contact",
+      "footer.widerruf": "Withdrawal",
     },
   };
 
@@ -188,6 +286,26 @@
         'Echte Kundenfotos mit den Werken auf <span class="font-serif-italic text-gold">Laptop</span> und <span class="font-serif-italic text-gold">Handy</span>.',
       "offer.heading":
         'Nimm die <span class="font-serif-italic text-gold">Galerie</span> mit',
+      "checkout.digitalConsent":
+        'Ich stimme zu, dass der Download sofort beginnt, und weiß, dass ich damit mein Widerrufsrecht für diese digitalen Inhalte verliere. (<a href="widerruf.html" class="text-gold underline">Widerrufsbelehrung</a>)',
+      "checkout.agbConsent":
+        'Ich akzeptiere die <a href="agb.html" class="text-gold underline">AGB</a> und die <a href="datenschutz.html" class="text-gold underline">Datenschutzerklärung</a>.',
+      "success.footnote":
+        "Der Link ist <strong>7 Tage gültig</strong>. Speichere diese Seite im Browser, falls du später erneut herunterladen möchtest.",
+      "success.help":
+        'Fragen? <a href="hilfe.html">Download-Hilfe</a> · <a href="mailto:kontakt@atelierwallpapers.de">Support</a>',
+      "help.p.download":
+        "Nach der Zahlung wirst du zur Bestätigungsseite weitergeleitet und kannst dort sofort herunterladen. Die Dateien sind nach Gerät sortiert (Laptop, Smartphone, weitere Formate in Premium).",
+      "help.p.devices":
+        "Mac, Windows, iPhone und Android. Die Premium-Kollektion enthält zusätzlich Ultrawide 21:9, iPad und Sperrbildschirm.",
+      "help.p.currency":
+        "Alle Preise sind in Euro (EUR). Die Essenzielle Kollektion kostet 9,90 €, die Premium-Kollektion 19,90 €. Einmalzahlung, kein Abo. Optional in 3 Raten mit Klarna, sofern im Checkout angeboten.",
+      "help.p.setup":
+        "<ul><li><strong>Mac:</strong> Systemeinstellungen → Hintergrundbild → Bild hinzufügen.</li><li><strong>Windows:</strong> Rechtsklick auf die Datei → Als Desktophintergrund festlegen.</li><li><strong>iPhone:</strong> Bild in der Fotos-App öffnen → Teilen → Als Hintergrundbild festlegen.</li><li><strong>Android:</strong> Lange auf den Startbildschirm tippen → Hintergrund → Foto auswählen.</li></ul>",
+      "help.p.guarantee":
+        '14 Tage Geld-zurück bei der Essenziellen Kollektion, 30 Tage bei Premium. Details stehen in den <a href="agb.html">AGB</a> und der <a href="widerruf.html">Widerrufsbelehrung</a>.',
+      "help.p.contact":
+        'Schreib uns: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
     },
     en: {
       "hero.title":
@@ -202,6 +320,26 @@
         'Real customer photos with the artworks on <span class="font-serif-italic text-gold">laptop</span> and <span class="font-serif-italic text-gold">phone</span>.',
       "offer.heading":
         'Take the <span class="font-serif-italic text-gold">gallery</span> with you',
+      "checkout.digitalConsent":
+        'I agree that the download starts immediately and understand that I lose my right of withdrawal for these digital contents. (<a href="widerruf.html" class="text-gold underline">Withdrawal policy</a>)',
+      "checkout.agbConsent":
+        'I accept the <a href="agb.html" class="text-gold underline">Terms</a> and the <a href="datenschutz.html" class="text-gold underline">Privacy Policy</a>.',
+      "success.footnote":
+        "The link is valid for <strong>7 days</strong>. Save this page in your browser if you want to download again later.",
+      "success.help":
+        'Questions? <a href="hilfe.html">Download help</a> · <a href="mailto:kontakt@atelierwallpapers.de">Support</a>',
+      "help.p.download":
+        "After payment you'll be redirected to the confirmation page where you can download instantly. Files are sorted by device (laptop, smartphone, extra formats in Premium).",
+      "help.p.devices":
+        "Mac, Windows, iPhone, and Android. The Premium collection also includes ultrawide 21:9, iPad, and lock screen formats.",
+      "help.p.currency":
+        "All prices are in Euro (EUR). The Essential collection is €9.90, the Premium collection is €19.90. One-time payment, no subscription. Optional 3 installments with Klarna when offered at checkout.",
+      "help.p.setup":
+        "<ul><li><strong>Mac:</strong> System Settings → Wallpaper → Add picture.</li><li><strong>Windows:</strong> Right-click the file → Set as desktop background.</li><li><strong>iPhone:</strong> Open in Photos → Share → Use as wallpaper.</li><li><strong>Android:</strong> Long-press home screen → Wallpaper → Choose photo.</li></ul>",
+      "help.p.guarantee":
+        '14-day money-back on Essential, 30 days on Premium. Details in our <a href="agb.html">Terms</a> and <a href="widerruf.html">Withdrawal policy</a>.',
+      "help.p.contact":
+        'Email us: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
     },
   };
 
@@ -214,6 +352,11 @@
         "Verwandle deinen Bildschirm in ein Kunstwerk mit exklusiven Wallpapers in Impasto-Ölmalerei.",
       locale: "de_DE",
       htmlLang: "de-DE",
+      pageTitle: {
+        checkout: "Kasse — Atelier Wallpapers",
+        success: "Zahlung bestätigt — Atelier Wallpapers",
+        help: "Hilfe — Atelier Wallpapers",
+      },
     },
     en: {
       title: "Atelier Wallpapers — Exclusive 4K Wallpapers",
@@ -223,6 +366,85 @@
         "Turn your screen into a work of art with exclusive impasto oil-painting wallpapers.",
       locale: "en_US",
       htmlLang: "en",
+      pageTitle: {
+        checkout: "Checkout — Atelier Wallpapers",
+        success: "Payment confirmed — Atelier Wallpapers",
+        help: "Help — Atelier Wallpapers",
+      },
+    },
+  };
+
+  var CHECKOUT_PLANS = {
+    de: {
+      essentiell: {
+        name: "Essenzielle Kollektion",
+        price: "9,90 €",
+        desc: "100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.",
+        perks: [
+          "100 Wallpapers in 4K",
+          "Mac, Windows, iPhone und Android",
+          "Sofortiger Download",
+          "14 Tage Geld-zurück-Garantie",
+        ],
+      },
+      premium: {
+        name: "Premium-Kollektion",
+        price: "19,90 €",
+        desc: "Über 200 Wallpapers in 4K, Ultrawide, iPad, Sperrbildschirm und Bonus-Guide.",
+        perks: [
+          "Über 200 Wallpapers in 4K",
+          "Ultrawide, iPad, Sperrbildschirm",
+          "Bonus-Guide",
+          "30 Tage erweiterte Garantie",
+        ],
+      },
+    },
+    en: {
+      essentiell: {
+        name: "Essential Collection",
+        price: "€9.90",
+        desc: "100 wallpapers in 4K for laptop and smartphone. Instant download.",
+        perks: [
+          "100 wallpapers in 4K",
+          "Mac, Windows, iPhone and Android",
+          "Instant download",
+          "14-day money-back guarantee",
+        ],
+      },
+      premium: {
+        name: "Premium Collection",
+        price: "€19.90",
+        desc: "Over 200 wallpapers in 4K, ultrawide, iPad, lock screen, and bonus guide.",
+        perks: [
+          "Over 200 wallpapers in 4K",
+          "Ultrawide, iPad, lock screen",
+          "Bonus guide",
+          "30-day extended guarantee",
+        ],
+      },
+    },
+  };
+
+  var SUCCESS_MSGS = {
+    de: {
+      noSession:
+        'Keine Bestellung gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. Sonst: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      notFound:
+        'Bestellung nicht gefunden. Falls du gerade bezahlt hast, warte einen Moment und lade die Seite neu. Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      timeout:
+        'Die Bestätigung dauert ungewöhnlich lange. Bitte lade die Seite neu. Bei Problemen: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      connection:
+        'Verbindung zum Server fehlgeschlagen. Lade die Seite neu oder kontaktiere <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>.',
+    },
+    en: {
+      noSession:
+        'No order found. If you just paid, wait a moment and reload the page. Otherwise: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      notFound:
+        'Order not found. If you just paid, wait a moment and reload the page. Problems? <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      timeout:
+        'Confirmation is taking unusually long. Please reload the page. Problems? <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>',
+      connection:
+        'Connection to the server failed. Reload the page or contact <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a>.',
     },
   };
 
@@ -244,6 +466,35 @@
   function socialDotLabel(lang, n) {
     if (lang === "en") return "Go to slide " + n;
     return "Zu Folie " + n;
+  }
+
+  function renderCheckoutPlan(lang) {
+    var root = document.body;
+    if (!root || root.getAttribute("data-i18n-page") !== "checkout") return;
+    var plan = (root.getAttribute("data-checkout-plan") || "essentiell").toLowerCase();
+    if (plan !== "premium") plan = "essentiell";
+    var data = CHECKOUT_PLANS[lang][plan];
+    if (!data) return;
+    var nameEl = document.getElementById("plan-name");
+    var descEl = document.getElementById("plan-desc");
+    var priceEl = document.getElementById("plan-price");
+    var btnPriceEl = document.getElementById("btn-price");
+    var perksEl = document.getElementById("plan-perks");
+    var payBtn = document.getElementById("pay-btn");
+    if (nameEl) nameEl.textContent = data.name;
+    if (descEl) descEl.textContent = data.desc;
+    if (priceEl) priceEl.textContent = data.price;
+    if (btnPriceEl) btnPriceEl.textContent = data.price;
+    if (payBtn && !payBtn.disabled) {
+      payBtn.innerHTML = T[lang]["checkout.payBtn"] + '<span id="btn-price">' + data.price + "</span>";
+    }
+    if (perksEl) {
+      perksEl.innerHTML = data.perks
+        .map(function (p) {
+          return "<li>✓ " + p + "</li>";
+        })
+        .join("");
+    }
   }
 
   function applyLang(lang) {
@@ -275,17 +526,27 @@
       if (T[lang][key] != null) el.setAttribute("aria-label", T[lang][key]);
     });
 
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-placeholder");
+      if (T[lang][key] != null) el.setAttribute("placeholder", T[lang][key]);
+    });
+
     document.querySelectorAll("[data-i18n-dot]").forEach(function (el) {
       var n = el.getAttribute("data-i18n-dot");
       el.setAttribute("aria-label", socialDotLabel(lang, n));
     });
 
+    var pageKey = document.body && document.body.getAttribute("data-i18n-page");
     var m = META[lang];
-    document.title = m.title;
+    if (pageKey && m.pageTitle && m.pageTitle[pageKey]) {
+      document.title = m.pageTitle[pageKey];
+    } else {
+      document.title = m.title;
+    }
     var desc = document.querySelector('meta[name="description"]');
     if (desc) desc.setAttribute("content", m.description);
     var ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", m.title);
+    if (ogTitle) ogTitle.setAttribute("content", document.title);
     var ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute("content", m.ogDescription);
     var ogLocale = document.querySelector('meta[property="og:locale"]');
@@ -303,6 +564,8 @@
       var now = slider.getAttribute("aria-valuenow") || "50";
       slider.setAttribute("aria-valuetext", sliderValueText(lang, now));
     }
+
+    renderCheckoutPlan(lang);
 
     window.ATELIER_LANG = lang;
     window.dispatchEvent(
@@ -323,6 +586,13 @@
     applyLang: applyLang,
     t: function (key) {
       return T[getLang()][key] || key;
+    },
+    successMsg: function (key) {
+      return SUCCESS_MSGS[getLang()][key] || "";
+    },
+    checkoutPlan: function (plan) {
+      var p = plan === "premium" ? "premium" : "essentiell";
+      return CHECKOUT_PLANS[getLang()][p];
     },
     sliderValueText: function (percent) {
       return sliderValueText(getLang(), percent);

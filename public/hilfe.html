@@ -11,49 +11,49 @@
   <link rel="stylesheet" href="assets/styles.css"/>
   <link rel="stylesheet" href="assets/de.css"/>
 </head>
-<body class="legal-page text-foreground">
+<body class="legal-page text-foreground" data-i18n-page="help">
   <header class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
     <a href="index.html" class="flex items-center">
       <img src="assets/artelier-logo-tkncU2qU.webp" alt="Artelier Wallpapers" class="h-16 w-auto md:h-20"/>
     </a>
-    <nav class="hidden items-center gap-8 text-[12px] uppercase tracking-[0.25em] text-foreground/80 md:flex">
-      <a href="index.html#galeria" class="hover:text-gold">Galerie</a>
-      <a href="index.html#oferta" class="hover:text-gold">Angebot</a>
-      <a href="impressum.html" class="hover:text-gold">Impressum</a>
-    </nav>
+    <div class="flex items-center gap-6">
+      <nav class="hidden items-center gap-8 text-[12px] uppercase tracking-[0.25em] text-foreground/80 md:flex">
+        <a href="index.html#galeria" class="hover:text-gold" data-i18n="common.gallery">Galerie</a>
+        <a href="index.html#oferta" class="hover:text-gold" data-i18n="common.offer">Angebot</a>
+        <a href="impressum.html" class="hover:text-gold" data-i18n="common.imprint">Impressum</a>
+      </nav>
+      <div class="lang-switch" role="group" data-i18n-aria="lang.label" aria-label="Sprache">
+        <button type="button" class="lang-switch-btn is-active" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" class="lang-switch-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </header>
   <main class="legal-wrap">
-
-<h1>Hilfe</h1>
-<p>Kurze Antworten zu Download, Geräten und Zahlung — für Kundinnen und Kunden in Deutschland.</p>
-<h2>Wie erhalte ich die Wallpapers?</h2>
-<p>Nach der Zahlung wirst du zur Bestätigungsseite weitergeleitet und kannst dort sofort herunterladen. Die Dateien sind nach Gerät sortiert (Laptop, Smartphone, weitere Formate in Premium).</p>
-<h2>Welche Geräte werden unterstützt?</h2>
-<p>Mac, Windows, iPhone und Android. Die Premium-Kollektion enthält zusätzlich Ultrawide 21:9, iPad und Sperrbildschirm.</p>
-<h2>In welcher Währung zahle ich?</h2>
-<p>Alle Preise sind in Euro (EUR). Die Essenzielle Kollektion kostet 9,90 €, die Premium-Kollektion 19,90 €. Einmalzahlung, kein Abo. Optional in 3 Raten mit Klarna, sofern im Checkout angeboten.</p>
-<h2>Wie setze ich ein Wallpaper?</h2>
-<ul>
-  <li><strong>Mac:</strong> Systemeinstellungen → Hintergrundbild → Bild hinzufügen.</li>
-  <li><strong>Windows:</strong> Rechtsklick auf die Datei → Als Desktophintergrund festlegen.</li>
-  <li><strong>iPhone:</strong> Bild in der Fotos-App öffnen → Teilen → Als Hintergrundbild festlegen.</li>
-  <li><strong>Android:</strong> Lange auf den Startbildschirm tippen → Hintergrund → Foto auswählen.</li>
-</ul>
-<h2>Garantie</h2>
-<p>14 Tage Geld-zurück bei der Essenziellen Kollektion, 30 Tage bei Premium. Details stehen in den <a href="agb.html">AGB</a> und der <a href="widerruf.html">Widerrufsbelehrung</a>.</p>
-<h2>Kontakt</h2>
-<p>Schreib uns: <a href="mailto:kontakt@atelierwallpapers.de">kontakt@atelierwallpapers.de</a></p>
-
+    <h1 data-i18n="help.title">Hilfe</h1>
+    <p data-i18n="help.intro">Kurze Antworten zu Download, Geräten und Zahlung — für Kundinnen und Kunden in Deutschland.</p>
+    <h2 data-i18n="help.h2.download">Wie erhalte ich die Wallpapers?</h2>
+    <p data-i18n-html="help.p.download"></p>
+    <h2 data-i18n="help.h2.devices">Welche Geräte werden unterstützt?</h2>
+    <p data-i18n-html="help.p.devices"></p>
+    <h2 data-i18n="help.h2.currency">In welcher Währung zahle ich?</h2>
+    <p data-i18n-html="help.p.currency"></p>
+    <h2 data-i18n="help.h2.setup">Wie setze ich ein Wallpaper?</h2>
+    <div data-i18n-html="help.p.setup"></div>
+    <h2 data-i18n="help.h2.guarantee">Garantie</h2>
+    <p data-i18n-html="help.p.guarantee"></p>
+    <h2 data-i18n="help.h2.contact">Kontakt</h2>
+    <p data-i18n-html="help.p.contact"></p>
   </main>
   <footer class="border-t border-white/10 px-6 py-8 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
     <div class="flex flex-wrap justify-center gap-6">
-      <a href="agb.html">AGB</a>
-      <a href="datenschutz.html">Datenschutz</a>
-      <a href="widerruf.html">Widerruf</a>
-      <a href="impressum.html">Impressum</a>
-      <a href="hilfe.html">Hilfe</a>
+      <a href="agb.html" data-i18n="footer.agb">AGB</a>
+      <a href="datenschutz.html" data-i18n="footer.privacy">Datenschutz</a>
+      <a href="widerruf.html" data-i18n="footer.widerruf">Widerruf</a>
+      <a href="impressum.html" data-i18n="footer.imprint">Impressum</a>
+      <a href="hilfe.html" data-i18n="footer.help">Hilfe</a>
     </div>
-    <p class="mt-4">© 2026 Atelier Wallpapers. Alle Rechte vorbehalten.</p>
+    <p class="mt-4" data-i18n="footer.copyright">© 2026 Atelier Wallpapers. Alle Rechte vorbehalten.</p>
   </footer>
+  <script src="assets/i18n.js"></script>
 </body>
 </html>

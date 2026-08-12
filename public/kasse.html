@@ -11,104 +11,92 @@
   <link rel="stylesheet" href="assets/styles.css"/>
   <link rel="stylesheet" href="assets/de.css"/>
 </head>
-<body class="legal-page text-foreground">
+<body class="legal-page text-foreground" data-i18n-page="checkout">
   <header class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
     <a href="index.html"><img src="assets/artelier-logo-tkncU2qU.webp" alt="Artelier Wallpapers" class="h-16 w-auto md:h-20"/></a>
-    <a href="index.html#oferta" class="text-[12px] uppercase tracking-[0.25em] hover:text-gold">Zurück zum Angebot</a>
+    <div class="flex items-center gap-4">
+      <a href="index.html#oferta" class="text-[12px] uppercase tracking-[0.25em] hover:text-gold" data-i18n="common.backOffer">Zurück zum Angebot</a>
+      <div class="lang-switch" role="group" data-i18n-aria="lang.label" aria-label="Sprache">
+        <button type="button" class="lang-switch-btn is-active" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" class="lang-switch-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
   </header>
 
   <main class="mx-auto max-w-5xl px-6 pb-20">
-    <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-gold">Kasse</p>
-    <h1 class="mt-3 font-serif text-4xl md:text-5xl">Sichere Zahlung in Euro</h1>
-    <p class="mt-3 max-w-xl text-muted-foreground">Digitales Produkt — kein Versand, kein Adresse nötig. Sofortiger Download direkt nach Zahlungsbestätigung.</p>
+    <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-gold" data-i18n="checkout.label">Kasse</p>
+    <h1 class="mt-3 font-serif text-4xl md:text-5xl" data-i18n="checkout.heading">Sichere Zahlung in Euro</h1>
+    <p class="mt-3 max-w-xl text-muted-foreground" data-i18n="checkout.intro">Digitales Produkt — kein Versand, kein Adresse nötig. Sofortiger Download direkt nach Zahlungsbestätigung.</p>
 
     <div id="cancel-notice" class="kasse-card mt-6 hidden border-gold/30">
-      <p class="text-sm text-muted-foreground">Zahlung abgebrochen. Du kannst es jederzeit erneut versuchen.</p>
+      <p class="text-sm text-muted-foreground" data-i18n="checkout.cancelled">Zahlung abgebrochen. Du kannst es jederzeit erneut versuchen.</p>
     </div>
 
     <div class="mt-10 grid gap-8 md:grid-cols-5">
       <form id="kasse-form" class="kasse-card md:col-span-3 space-y-4">
-        <h2 class="text-lg font-semibold">Deine Daten</h2>
-        <p class="text-sm text-muted-foreground">Nur E-Mail und Name — als Infoprodukt brauchen wir keine Lieferadresse.</p>
-        <label class="block text-sm">E-Mail
-          <input class="kasse-input mt-1" type="email" name="em" required autocomplete="email" placeholder="deine@email.de"/>
+        <h2 class="text-lg font-semibold" data-i18n="checkout.formTitle">Deine Daten</h2>
+        <p class="text-sm text-muted-foreground" data-i18n="checkout.formHint">Nur E-Mail und Name — als Infoprodukt brauchen wir keine Lieferadresse.</p>
+        <label class="block text-sm"><span data-i18n="checkout.email">E-Mail</span>
+          <input class="kasse-input mt-1" type="email" name="em" required autocomplete="email" data-i18n-placeholder="checkout.emailPlaceholder" placeholder="deine@email.de"/>
         </label>
-        <label class="block text-sm">Name (optional)
-          <input class="kasse-input mt-1" name="name" autocomplete="name" placeholder="Max Mustermann"/>
+        <label class="block text-sm"><span data-i18n="checkout.name">Name (optional)</span>
+          <input class="kasse-input mt-1" name="name" autocomplete="name" data-i18n-placeholder="checkout.namePlaceholder" placeholder="Max Mustermann"/>
         </label>
 
         <label class="mt-4 flex gap-3 text-sm text-muted-foreground">
           <input type="checkbox" name="digital" required class="mt-1" style="accent-color:var(--gold)"/>
-          <span>Ich stimme zu, dass der Download sofort beginnt, und weiß, dass ich damit mein Widerrufsrecht für diese digitalen Inhalte verliere. (<a href="widerruf.html" class="text-gold underline">Widerrufsbelehrung</a>)</span>
+          <span data-i18n-html="checkout.digitalConsent">Ich stimme zu, dass der Download sofort beginnt…</span>
         </label>
         <label class="flex gap-3 text-sm text-muted-foreground">
           <input type="checkbox" name="agb" required class="mt-1" style="accent-color:var(--gold)"/>
-          <span>Ich akzeptiere die <a href="agb.html" class="text-gold underline">AGB</a> und die <a href="datenschutz.html" class="text-gold underline">Datenschutzerklärung</a>.</span>
+          <span data-i18n-html="checkout.agbConsent">Ich akzeptiere die AGB…</span>
         </label>
 
         <button id="pay-btn" type="submit" class="mt-4 w-full rounded-full bg-gold px-6 py-4 text-sm font-bold uppercase tracking-wider text-background transition hover:scale-[1.01] disabled:opacity-50">
-          Weiter zu Stripe — <span id="btn-price">9,90 €</span>
+          <span data-i18n="checkout.payBtn">Weiter zu Stripe — </span><span id="btn-price">9,90 €</span>
         </button>
-        <p class="text-center text-xs text-muted-foreground">100 % sichere Zahlung · Stripe · Karte, PayPal, Klarna · EUR</p>
+        <p class="text-center text-xs text-muted-foreground" data-i18n="checkout.paySecure">100 % sichere Zahlung · Stripe · Karte, PayPal, Klarna · EUR</p>
         <p id="checkout-error" class="hidden text-center text-sm text-red-400"></p>
       </form>
 
       <aside class="kasse-card md:col-span-2 h-fit">
-        <p class="text-[11px] uppercase tracking-[0.3em] text-gold">Bestellung</p>
+        <p class="text-[11px] uppercase tracking-[0.3em] text-gold" data-i18n="checkout.orderLabel">Bestellung</p>
         <h2 id="plan-name" class="mt-2 text-xl font-semibold">Essenzielle Kollektion</h2>
         <p id="plan-desc" class="mt-2 text-sm text-muted-foreground">100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.</p>
         <div class="mt-6 flex items-end justify-between border-t border-white/10 pt-4">
-          <span class="text-sm text-muted-foreground">Gesamt (EUR)</span>
+          <span class="text-sm text-muted-foreground" data-i18n="checkout.total">Gesamt (EUR)</span>
           <span id="plan-price" class="text-3xl font-semibold">9,90 €</span>
         </div>
         <ul class="mt-5 space-y-2 text-sm text-muted-foreground" id="plan-perks"></ul>
-        <p class="mt-6 text-xs text-muted-foreground">Einmalzahlung. Rechnung per E-Mail von Stripe.</p>
+        <p class="mt-6 text-xs text-muted-foreground" data-i18n="checkout.invoiceNote">Einmalzahlung. Rechnung per E-Mail von Stripe.</p>
       </aside>
     </div>
   </main>
 
+  <script src="assets/i18n.js"></script>
   <script src="config.js"></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
       var plan = (params.get("plan") || "essentiell").toLowerCase();
       if (plan !== "premium") plan = "essentiell";
+      document.body.setAttribute("data-checkout-plan", plan);
       if (params.get("cancelled")) {
         document.getElementById("cancel-notice").classList.remove("hidden");
       }
 
-      var data = {
-        essentiell: {
-          name: "Essenzielle Kollektion",
-          price: "9,90 €",
-          desc: "100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.",
-          perks: ["100 Wallpapers in 4K", "Mac, Windows, iPhone und Android", "Sofortiger Download", "14 Tage Geld-zurück-Garantie"]
-        },
-        premium: {
-          name: "Premium-Kollektion",
-          price: "19,90 €",
-          desc: "Über 200 Wallpapers in 4K, Ultrawide, iPad, Sperrbildschirm und Bonus-Guide.",
-          perks: ["Über 200 Wallpapers in 4K", "Ultrawide, iPad, Sperrbildschirm", "Bonus-Guide", "30 Tage erweiterte Garantie"]
-        }
-      }[plan];
-
-      document.getElementById("plan-name").textContent = data.name;
-      document.getElementById("plan-desc").textContent = data.desc;
-      document.getElementById("plan-price").textContent = data.price;
-      document.getElementById("btn-price").textContent = data.price;
-      data.perks.forEach(function (p) {
-        var li = document.createElement("li");
-        li.textContent = "✓ " + p;
-        document.getElementById("plan-perks").appendChild(li);
-      });
+      function payBtnHtml(price) {
+        return window.ATELIER_I18N.t("checkout.payBtn") + '<span id="btn-price">' + price + "</span>";
+      }
 
       document.getElementById("kasse-form").addEventListener("submit", async function (ev) {
         ev.preventDefault();
         var btn = document.getElementById("pay-btn");
         var errEl = document.getElementById("checkout-error");
+        var planData = window.ATELIER_I18N.checkoutPlan(plan);
         errEl.classList.add("hidden");
         btn.disabled = true;
-        btn.textContent = "Weiterleitung zu Stripe…";
+        btn.textContent = window.ATELIER_I18N.t("checkout.payRedirect");
 
         var fd = new FormData(ev.target);
         try {
@@ -122,13 +110,13 @@
             })
           });
           var json = await res.json();
-          if (!res.ok) throw new Error(json.error || "Checkout fehlgeschlagen");
+          if (!res.ok) throw new Error(json.error || window.ATELIER_I18N.t("checkout.checkoutFailed"));
           location.href = json.url;
         } catch (e) {
           errEl.textContent = e.message;
           errEl.classList.remove("hidden");
           btn.disabled = false;
-          btn.innerHTML = 'Weiter zu Stripe — <span id="btn-price">' + data.price + "</span>";
+          btn.innerHTML = payBtnHtml(planData.price);
         }
       });
     })();
