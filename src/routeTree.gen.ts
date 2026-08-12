@@ -10,33 +10,232 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
+import { Route as ApiTrackRouteImport } from './routes/api/track'
+import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
+import { Route as ApiAdminDashboardRouteImport } from './routes/api/admin/dashboard'
+import { Route as ApiAdminLiveRouteImport } from './routes/api/admin/live'
+import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
+import { Route as ApiAdminLogoutRouteImport } from './routes/api/admin/logout'
+import { Route as ApiAdminMeRouteImport } from './routes/api/admin/me'
+import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
+import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
+import { Route as ApiAdminSettingsRouteImport } from './routes/api/admin/settings'
+import { Route as ApiAdminUploadProductRouteImport } from './routes/api/admin/upload-product'
+import { Route as ApiDownloadTokenRouteImport } from './routes/api/download/$token'
+import { Route as ApiOrderStatusRouteImport } from './routes/api/order/status'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
+  id: '/api/checkout',
+  path: '/api/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTrackRoute = ApiTrackRouteImport.update({
+  id: '/api/track',
+  path: '/api/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
+  id: '/api/admin/analytics',
+  path: '/api/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminDashboardRoute = ApiAdminDashboardRouteImport.update({
+  id: '/api/admin/dashboard',
+  path: '/api/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLiveRoute = ApiAdminLiveRouteImport.update({
+  id: '/api/admin/live',
+  path: '/api/admin/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
+  id: '/api/admin/login',
+  path: '/api/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLogoutRoute = ApiAdminLogoutRouteImport.update({
+  id: '/api/admin/logout',
+  path: '/api/admin/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMeRoute = ApiAdminMeRouteImport.update({
+  id: '/api/admin/me',
+  path: '/api/admin/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminOrdersRoute = ApiAdminOrdersRouteImport.update({
+  id: '/api/admin/orders',
+  path: '/api/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminProductsRoute = ApiAdminProductsRouteImport.update({
+  id: '/api/admin/products',
+  path: '/api/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminSettingsRoute = ApiAdminSettingsRouteImport.update({
+  id: '/api/admin/settings',
+  path: '/api/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUploadProductRoute = ApiAdminUploadProductRouteImport.update({
+  id: '/api/admin/upload-product',
+  path: '/api/admin/upload-product',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDownloadTokenRoute = ApiDownloadTokenRouteImport.update({
+  id: '/api/download/$token',
+  path: '/api/download/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOrderStatusRoute = ApiOrderStatusRouteImport.update({
+  id: '/api/order/status',
+  path: '/api/order/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe/webhook',
+  path: '/api/public/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/me': typeof ApiAdminMeRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/order/status': typeof ApiOrderStatusRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/me': typeof ApiAdminMeRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/order/status': typeof ApiOrderStatusRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/checkout': typeof ApiCheckoutRoute
+  '/api/track': typeof ApiTrackRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
+  '/api/admin/dashboard': typeof ApiAdminDashboardRoute
+  '/api/admin/live': typeof ApiAdminLiveRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/logout': typeof ApiAdminLogoutRoute
+  '/api/admin/me': typeof ApiAdminMeRoute
+  '/api/admin/orders': typeof ApiAdminOrdersRoute
+  '/api/admin/products': typeof ApiAdminProductsRoute
+  '/api/admin/settings': typeof ApiAdminSettingsRoute
+  '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/download/$token': typeof ApiDownloadTokenRoute
+  '/api/order/status': typeof ApiOrderStatusRoute
+  '/api/public/stripe/webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api/checkout'
+    | '/api/track'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard'
+    | '/api/admin/live'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/me'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/settings'
+    | '/api/admin/upload-product'
+    | '/api/download/$token'
+    | '/api/order/status'
+    | '/api/public/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api/checkout'
+    | '/api/track'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard'
+    | '/api/admin/live'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/me'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/settings'
+    | '/api/admin/upload-product'
+    | '/api/download/$token'
+    | '/api/order/status'
+    | '/api/public/stripe/webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/checkout'
+    | '/api/track'
+    | '/api/admin/analytics'
+    | '/api/admin/dashboard'
+    | '/api/admin/live'
+    | '/api/admin/login'
+    | '/api/admin/logout'
+    | '/api/admin/me'
+    | '/api/admin/orders'
+    | '/api/admin/products'
+    | '/api/admin/settings'
+    | '/api/admin/upload-product'
+    | '/api/download/$token'
+    | '/api/order/status'
+    | '/api/public/stripe/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiCheckoutRoute: typeof ApiCheckoutRoute
+  ApiTrackRoute: typeof ApiTrackRoute
+  ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
+  ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
+  ApiAdminLiveRoute: typeof ApiAdminLiveRoute
+  ApiAdminLoginRoute: typeof ApiAdminLoginRoute
+  ApiAdminLogoutRoute: typeof ApiAdminLogoutRoute
+  ApiAdminMeRoute: typeof ApiAdminMeRoute
+  ApiAdminOrdersRoute: typeof ApiAdminOrdersRoute
+  ApiAdminProductsRoute: typeof ApiAdminProductsRoute
+  ApiAdminSettingsRoute: typeof ApiAdminSettingsRoute
+  ApiAdminUploadProductRoute: typeof ApiAdminUploadProductRoute
+  ApiDownloadTokenRoute: typeof ApiDownloadTokenRoute
+  ApiOrderStatusRoute: typeof ApiOrderStatusRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +247,131 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checkout': {
+      id: '/api/checkout'
+      path: '/api/checkout'
+      fullPath: '/api/checkout'
+      preLoaderRoute: typeof ApiCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/track': {
+      id: '/api/track'
+      path: '/api/track'
+      fullPath: '/api/track'
+      preLoaderRoute: typeof ApiTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics': {
+      id: '/api/admin/analytics'
+      path: '/api/admin/analytics'
+      fullPath: '/api/admin/analytics'
+      preLoaderRoute: typeof ApiAdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/dashboard': {
+      id: '/api/admin/dashboard'
+      path: '/api/admin/dashboard'
+      fullPath: '/api/admin/dashboard'
+      preLoaderRoute: typeof ApiAdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/live': {
+      id: '/api/admin/live'
+      path: '/api/admin/live'
+      fullPath: '/api/admin/live'
+      preLoaderRoute: typeof ApiAdminLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/login': {
+      id: '/api/admin/login'
+      path: '/api/admin/login'
+      fullPath: '/api/admin/login'
+      preLoaderRoute: typeof ApiAdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/logout': {
+      id: '/api/admin/logout'
+      path: '/api/admin/logout'
+      fullPath: '/api/admin/logout'
+      preLoaderRoute: typeof ApiAdminLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/me': {
+      id: '/api/admin/me'
+      path: '/api/admin/me'
+      fullPath: '/api/admin/me'
+      preLoaderRoute: typeof ApiAdminMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/orders': {
+      id: '/api/admin/orders'
+      path: '/api/admin/orders'
+      fullPath: '/api/admin/orders'
+      preLoaderRoute: typeof ApiAdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/products': {
+      id: '/api/admin/products'
+      path: '/api/admin/products'
+      fullPath: '/api/admin/products'
+      preLoaderRoute: typeof ApiAdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/settings': {
+      id: '/api/admin/settings'
+      path: '/api/admin/settings'
+      fullPath: '/api/admin/settings'
+      preLoaderRoute: typeof ApiAdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/upload-product': {
+      id: '/api/admin/upload-product'
+      path: '/api/admin/upload-product'
+      fullPath: '/api/admin/upload-product'
+      preLoaderRoute: typeof ApiAdminUploadProductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/download/$token': {
+      id: '/api/download/$token'
+      path: '/api/download/$token'
+      fullPath: '/api/download/$token'
+      preLoaderRoute: typeof ApiDownloadTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/order/status': {
+      id: '/api/order/status'
+      path: '/api/order/status'
+      fullPath: '/api/order/status'
+      preLoaderRoute: typeof ApiOrderStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/stripe/webhook': {
+      id: '/api/public/stripe/webhook'
+      path: '/api/public/stripe/webhook'
+      fullPath: '/api/public/stripe/webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiCheckoutRoute: ApiCheckoutRoute,
+  ApiTrackRoute: ApiTrackRoute,
+  ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
+  ApiAdminDashboardRoute: ApiAdminDashboardRoute,
+  ApiAdminLiveRoute: ApiAdminLiveRoute,
+  ApiAdminLoginRoute: ApiAdminLoginRoute,
+  ApiAdminLogoutRoute: ApiAdminLogoutRoute,
+  ApiAdminMeRoute: ApiAdminMeRoute,
+  ApiAdminOrdersRoute: ApiAdminOrdersRoute,
+  ApiAdminProductsRoute: ApiAdminProductsRoute,
+  ApiAdminSettingsRoute: ApiAdminSettingsRoute,
+  ApiAdminUploadProductRoute: ApiAdminUploadProductRoute,
+  ApiDownloadTokenRoute: ApiDownloadTokenRoute,
+  ApiOrderStatusRoute: ApiOrderStatusRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

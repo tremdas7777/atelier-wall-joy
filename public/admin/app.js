@@ -87,7 +87,7 @@
     app.classList.remove("hidden");
     loadDashboard();
     loadProducts();
-    $("#webhook-url").textContent = location.origin + "/api/stripe/webhook";
+    $("#webhook-url").textContent = location.origin + "/api/public/stripe/webhook";
   }
 
   $("#login-form").addEventListener("submit", async (ev) => {
