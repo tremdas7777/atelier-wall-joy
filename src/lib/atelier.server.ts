@@ -1,7 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual, createHash } from "node:crypto";
-import {
-  supabaseAdmin,
-} from "@/integrations/supabase/client.server";
+import { createClient } from "@supabase/supabase-js";
 
 /* ============================================================
  * Atelier Wallpapers — backend logic (Lovable Cloud port)
@@ -30,10 +28,144 @@ const PLAN_DESCRIPTIONS: Record<Plan, string> = {
     "100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.",
 };
 
+/* ---------------- Self-contained typed Supabase admin client ---------------- */
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+interface AtelierDatabase {
+  public: {
+    Tables: {
+      settings: {
+        Row: { key: string; value: string };
+        Insert: { key: string; value: string };
+        Update: { key?: string; value?: string };
+      };
+      orders: {
+        Row: {
+          id: number;
+          order_uid: string;
+          email: string;
+          customer_name: string | null;
+          plan: string;
+          amount_cents: number;
+          currency: string;
+          status: string;
+          stripe_session_id: string | null;
+          stripe_payment_intent: string | null;
+          download_token: string | null;
+          download_expires_at: string | null;
+          email_sent_at: string | null;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          order_uid: string;
+          email: string;
+          customer_name?: string | null;
+          plan: string;
+          amount_cents: number;
+          currency?: string;
+          status?: string;
+          stripe_session_id?: string | null;
+          download_token?: string;
+          download_expires_at?: string;
+        };
+        Update: Partial<AtelierDatabase["public"]["Tables"]["orders"]["Insert"]> & {
+          status?: string;
+          stripe_payment_intent?: string | null;
+          paid_at?: string | null;
+        };
+      };
+      page_views: {
+        Row: {
+          id: number;
+          path: string;
+          referrer: string | null;
+          user_agent: string | null;
+          ip_hash: string | null;
+          created_at: string;
+        };
+        Insert: {
+          path: string;
+          referrer?: string | null;
+          user_agent?: string | null;
+          ip_hash?: string | null;
+        };
+        Update: Record<string, never>;
+      };
+      checkout_events: {
+        Row: {
+          id: number;
+          event_type: string;
+          plan: string | null;
+          email: string | null;
+          metadata: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          event_type: string;
+          plan?: string | null;
+          email?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      orders_status_counts: {
+        Args: Record<string, never>;
+        Returns: { status: string; count: number }[];
+      };
+    };
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+}
+
+function isNewKey(value: string): boolean {
+  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
+}
+
+let _admin: ReturnType<typeof createClient<AtelierDatabase>> | undefined;
+
+function admin() {
+  if (_admin) return _admin;
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  if (!url || !key) {
+    throw new Error("Supabase nicht konfiguriert (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
+  }
+  _admin = createClient<AtelierDatabase>(url, key, {
+    global: {
+      fetch: ((input: RequestInfo | URL, init?: RequestInit) => {
+        const headers = new Headers(
+          typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
+        );
+        if (init?.headers) new Headers(init.headers).forEach((v, k) => headers.set(k, v));
+        if (isNewKey(key) && headers.get("Authorization") === `Bearer ${key}`) {
+          headers.delete("Authorization");
+        }
+        headers.set("apikey", key);
+        return fetch(input, { ...init, headers });
+      }) as typeof fetch,
+    },
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+  return _admin;
+}
+
 /* ---------------- Settings ---------------- */
 
 export async function getSetting(key: string, fallback = ""): Promise<string> {
-  const { data } = await supabaseAdmin
+  const { data } = await admin()
     .from("settings")
     .select("value")
     .eq("key", key)
@@ -42,13 +174,13 @@ export async function getSetting(key: string, fallback = ""): Promise<string> {
 }
 
 export async function setSetting(key: string, value: string): Promise<void> {
-  await supabaseAdmin
+  await admin()
     .from("settings")
     .upsert({ key, value: String(value ?? "") }, { onConflict: "key" });
 }
 
 export async function getAllSettings(): Promise<Record<string, string>> {
-  const { data } = await supabaseAdmin.from("settings").select("key,value");
+  const { data } = await admin().from("settings").select("key,value");
   const out: Record<string, string> = {};
   for (const r of data ?? []) out[r.key] = r.value;
   return out;
@@ -93,7 +225,7 @@ export async function createOrder(data: {
   download_token: string;
   download_expires_at: string;
 }) {
-  await supabaseAdmin.from("orders").insert({
+  await admin().from("orders").insert({
     order_uid: data.order_uid,
     email: data.email,
     customer_name: data.customer_name,
@@ -108,7 +240,7 @@ export async function createOrder(data: {
 }
 
 export async function getOrderBySessionId(sessionId: string) {
-  const { data } = await supabaseAdmin
+  const { data } = await admin()
     .from("orders")
     .select("*")
     .eq("stripe_session_id", sessionId)
@@ -117,7 +249,7 @@ export async function getOrderBySessionId(sessionId: string) {
 }
 
 export async function getOrderByToken(token: string) {
-  const { data } = await supabaseAdmin
+  const { data } = await admin()
     .from("orders")
     .select("*")
     .eq("download_token", token)
@@ -126,7 +258,7 @@ export async function getOrderByToken(token: string) {
 }
 
 export async function getOrderByUid(uid: string) {
-  const { data } = await supabaseAdmin
+  const { data } = await admin()
     .from("orders")
     .select("*")
     .eq("order_uid", uid)
@@ -134,15 +266,19 @@ export async function getOrderByUid(uid: string) {
   return data;
 }
 
-export async function markOrderPaid(orderId: string | number, paymentIntent: string) {
-  await supabaseAdmin
+export async function markOrderPaid(orderId: number, paymentIntent: string) {
+  await admin()
     .from("orders")
-    .update({ status: "paid", stripe_payment_intent: paymentIntent, paid_at: new Date().toISOString() })
+    .update({
+      status: "paid",
+      stripe_payment_intent: paymentIntent,
+      paid_at: new Date().toISOString(),
+    })
     .eq("id", orderId);
 }
 
 export async function listOrders(limit = 100, offset = 0) {
-  const { data } = await supabaseAdmin
+  const { data } = await admin()
     .from("orders")
     .select("*")
     .order("created_at", { ascending: false })
@@ -151,19 +287,23 @@ export async function listOrders(limit = 100, offset = 0) {
 }
 
 export async function countOrdersByStatus() {
-  const { data, error } = await supabaseAdmin.rpc("orders_status_counts");
+  const { data, error } = await admin().rpc("orders_status_counts");
   if (error || !data) {
-    // fall back to client-side grouping
-    const { data: rows } = await supabaseAdmin.from("orders").select("status");
+    const { data: rows } = await admin().from("orders").select("status");
     const map: Record<string, number> = {};
     for (const r of rows ?? []) map[r.status] = (map[r.status] ?? 0) + 1;
     return Object.entries(map).map(([status, count]) => ({ status, count }));
   }
-  return data as { status: string; count: number }[];
+  return data;
 }
 
-export async function trackPageView(p: { path: string; referrer?: string; userAgent?: string; ipHash?: string }) {
-  await supabaseAdmin.from("page_views").insert({
+export async function trackPageView(p: {
+  path: string;
+  referrer?: string;
+  userAgent?: string;
+  ipHash?: string;
+}) {
+  await admin().from("page_views").insert({
     path: p.path,
     referrer: p.referrer || null,
     user_agent: p.userAgent || null,
@@ -177,7 +317,7 @@ export async function trackCheckoutEvent(
   email: string | null,
   metadata: Record<string, unknown> = {},
 ) {
-  await supabaseAdmin.from("checkout_events").insert({
+  await admin().from("checkout_events").insert({
     event_type: eventType,
     plan: plan || null,
     email: email || null,
@@ -190,7 +330,7 @@ export async function trackCheckoutEvent(
 export async function getAnalytics(days = 30) {
   const since = new Date(Date.now() - days * 86400000).toISOString();
 
-  const { data: paidRows } = await supabaseAdmin
+  const { data: paidRows } = await admin()
     .from("orders")
     .select("amount_cents,created_at,plan,status")
     .gte("created_at", since);
@@ -210,7 +350,7 @@ export async function getAnalytics(days = 30) {
     .map(([day, v]) => ({ day, ...v }))
     .sort((a, b) => a.day.localeCompare(b.day));
 
-  const { data: viewRows } = await supabaseAdmin
+  const { data: viewRows } = await admin()
     .from("page_views")
     .select("created_at")
     .gte("created_at", since);
@@ -236,12 +376,12 @@ export async function getAnalytics(days = 30) {
 
 export async function getLiveFeed(limit = 40) {
   const half = Math.floor(limit / 2);
-  const { data: orders } = await supabaseAdmin
+  const { data: orders } = await admin()
     .from("orders")
     .select("order_uid,email,plan,status,amount_cents,created_at")
     .order("created_at", { ascending: false })
     .limit(half);
-  const { data: views } = await supabaseAdmin
+  const { data: views } = await admin()
     .from("page_views")
     .select("path,referrer,created_at")
     .order("created_at", { ascending: false })
@@ -266,7 +406,9 @@ export async function getLiveFeed(limit = 40) {
       amount_cents: null,
       created_at: v.created_at,
     })),
-  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, limit);
+  ]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
 
   return feed;
 }
@@ -275,7 +417,7 @@ export async function todayStats() {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const startIso = start.toISOString();
-  const { data: orders } = await supabaseAdmin
+  const { data: orders } = await admin()
     .from("orders")
     .select("status,amount_cents")
     .gte("created_at", startIso);
@@ -285,11 +427,11 @@ export async function todayStats() {
     ordersCount += 1;
     if (r.status === "paid") revenue += r.amount_cents || 0;
   }
-  const { count: views } = await supabaseAdmin
+  const { count } = await admin()
     .from("page_views")
     .select("*", { count: "exact", head: true })
     .gte("created_at", startIso);
-  return { orders: ordersCount, revenueCents: revenue, views: views ?? 0 };
+  return { orders: ordersCount, revenueCents: revenue, views: count ?? 0 };
 }
 
 /* ---------------- Delivery ---------------- */
@@ -298,22 +440,31 @@ export function planDisplayName(plan: string) {
   return plan === "premium" ? "Premium-Kollektion" : "Essenzielle Kollektion";
 }
 
-export function orderDownloadUrl(order: { download_token: string | null; status: string } | null, baseUrl: string) {
+export function orderDownloadUrl(
+  order: { download_token: string | null; status: string } | null,
+  baseUrl: string,
+) {
   if (!order?.download_token || order.status !== "paid") return null;
   return `${baseUrl}/api/download/${order.download_token}`;
 }
 
-export function isTokenValid(order: { status: string; download_expires_at: string | null } | null) {
+export function isTokenValid(order: {
+  status: string;
+  download_expires_at: string | null;
+} | null) {
   if (!order || order.status !== "paid") return false;
   if (!order.download_expires_at) return true;
   return new Date(order.download_expires_at).getTime() > Date.now();
 }
 
-export async function fulfillPaidOrder(session: {
-  id: string;
-  payment_intent: string | null;
-  metadata?: { order_uid?: string } | null;
-}, baseUrl: string) {
+export async function fulfillPaidOrder(
+  session: {
+    id: string;
+    payment_intent: string | null;
+    metadata?: { order_uid?: string } | null;
+  },
+  baseUrl: string,
+) {
   let order = await getOrderBySessionId(session.id);
   if (!order && session.metadata?.order_uid) {
     order = await getOrderByUid(session.metadata.order_uid);
@@ -323,9 +474,12 @@ export async function fulfillPaidOrder(session: {
 
   await markOrderPaid(order.id, session.payment_intent || "");
   order = await getOrderBySessionId(session.id);
+  if (!order) throw new Error("Bestellung nach Erfüllung nicht gefunden.");
 
   if (!(await productFileExists(order.plan as Plan))) {
-    await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, { order_uid: order.order_uid });
+    await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, {
+      order_uid: order.order_uid,
+    });
     throw new Error("Produktdatei fehlt für Plan: " + order.plan);
   }
 
@@ -340,10 +494,11 @@ export async function fulfillPaidOrder(session: {
 /* ---------------- Products (Storage) ---------------- */
 
 export async function productFileExists(plan: Plan): Promise<boolean> {
-  const path = PRODUCT_PATHS[plan];
   const dir = plan;
-  const file = path.split("/")[1];
-  const { data, error } = await supabaseAdmin.storage.from(PRODUCTS_BUCKET).list(dir, { limit: 100, search: file });
+  const file = PRODUCT_PATHS[plan].split("/")[1]!;
+  const { data, error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .list(dir, { limit: 100, search: file });
   if (error) return false;
   return (data ?? []).some((f) => f.name === file);
 }
@@ -361,24 +516,26 @@ function formatBytes(bytes?: number) {
 }
 
 export async function getProductInfo(plan: Plan) {
-  const cfg = { plan, label: PRODUCT_LABELS[plan] };
-  const path = PRODUCT_PATHS[plan];
+  const label = PRODUCT_LABELS[plan];
   const dir = plan;
-  const file = path.split("/")[1];
-  const { data, error } = await supabaseAdmin.storage.from(PRODUCTS_BUCKET).list(dir, { limit: 100, search: file });
+  const file = PRODUCT_PATHS[plan].split("/")[1]!;
+  const { data, error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .list(dir, { limit: 100, search: file });
   if (error || !data || !data.some((f) => f.name === file)) {
-    return { ...cfg, exists: false };
+    return { plan, label, exists: false };
   }
   const entry = data.find((f) => f.name === file)!;
   const sizeBytes = (entry.metadata as { size?: number } | null)?.size ?? 0;
   return {
-    ...cfg,
+    plan,
+    label,
     exists: true,
     filename: file,
     sizeBytes,
     sizeHuman: formatBytes(sizeBytes),
     updatedAt: entry.updated_at,
-    relativePath: path,
+    relativePath: PRODUCT_PATHS[plan],
   };
 }
 
@@ -388,8 +545,8 @@ export async function listProductsInfo() {
 
 export async function uploadProduct(plan: Plan, fileBuffer: ArrayBuffer, contentType: string) {
   const path = PRODUCT_PATHS[plan];
-  const { error } = await supabaseAdmin.storage
-    .from(PRODUCTS_BUCKET)
+  const { error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
     .upload(path, fileBuffer, { contentType, upsert: true });
   if (error) throw new Error(error.message);
   return getProductInfo(plan);
@@ -397,19 +554,18 @@ export async function uploadProduct(plan: Plan, fileBuffer: ArrayBuffer, content
 
 export async function createDownloadSignedUrl(plan: Plan, expiresIn = 60) {
   const path = PRODUCT_PATHS[plan];
-  const { data, error } = await supabaseAdmin.storage
-    .from(PRODUCTS_BUCKET)
-    .createSignedUrl(path, expiresIn, { download: PRODUCT_PATHS[plan].split("/")[1] });
+  const { data, error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .createSignedUrl(path, expiresIn, { download: PRODUCT_PATHS[plan].split("/")[1]! });
   if (error || !data?.signedUrl) throw new Error("Download-URL konnte nicht erstellt werden.");
   return data.signedUrl;
 }
 
 /* ---------------- Stripe (raw REST, edge-safe) ---------------- */
 
-function stripeSecret() {
+function stripeSecret(): string | null {
   const key = process.env["STRIPE_SECRET_KEY"];
-  if (!key) return null;
-  return key;
+  return key || null;
 }
 
 export function isStripeConfigured() {
@@ -465,9 +621,10 @@ export async function createCheckoutSession(args: {
 export async function retrieveCheckoutSession(sessionId: string) {
   const secret = stripeSecret();
   if (!secret) return null;
-  const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
-    headers: { Authorization: `Bearer ${secret}` },
-  });
+  const res = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+    { headers: { Authorization: `Bearer ${secret}` } },
+  );
   if (!res.ok) return null;
   const json = (await res.json()) as {
     id: string;
@@ -482,10 +639,14 @@ export function constructWebhookEvent(rawBody: string, signatureHeader: string) 
   const secret = process.env["STRIPE_WEBHOOK_SECRET"];
   if (!secret) throw new Error("Webhook nicht konfiguriert.");
   const parts = Object.fromEntries(
-    signatureHeader.split(",").map((kv) => {
-      const [k, v] = kv.split("=");
-      return [k.trim(), (v || "").trim()];
-    }),
+    signatureHeader
+      .split(",")
+      .map((kv) => {
+        const idx = kv.indexOf("=");
+        const k = idx >= 0 ? kv.slice(0, idx) : kv;
+        const v = idx >= 0 ? kv.slice(idx + 1) : "";
+        return [k.trim(), v.trim()];
+      }),
   );
   const timestamp = parts["t"];
   const v1 = parts["v1"];
@@ -498,13 +659,19 @@ export function constructWebhookEvent(rawBody: string, signatureHeader: string) 
     throw new Error("Signatur ungültig.");
   }
 
-  // tolerant replay window (5 min)
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
   if (age > 300) throw new Error("Webhook abgelaufen.");
 
   return JSON.parse(rawBody) as {
     type: string;
-    data: { object: { id: string; payment_status?: string; payment_intent?: string | null; metadata?: { order_uid?: string } | null } };
+    data: {
+      object: {
+        id: string;
+        payment_status?: string;
+        payment_intent?: string | null;
+        metadata?: { order_uid?: string } | null;
+      };
+    };
   };
 }
 
@@ -602,7 +769,17 @@ export function buildOrderStatus(
   };
 }
 
-export function sanitizeOrder(order: Record<string, unknown>) {
+export function sanitizeOrder(order: {
+  order_uid: string;
+  email: string;
+  customer_name: string | null;
+  plan: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
+}) {
   return {
     order_uid: order.order_uid,
     email: order.email,
