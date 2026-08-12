@@ -317,20 +317,20 @@
     const d = await api("/settings");
     const form = $("#settings-form");
     const secretFields = new Set([
+      "stripe_publishable_key",
       "stripe_secret_key",
       "stripe_webhook_secret",
     ]);
     Object.entries(d.settings).forEach(([key, val]) => {
       const input = form.elements.namedItem(key);
       if (!input) return;
-      if (secretFields.has(key) && String(val).includes("••••")) {
+      if (secretFields.has(key)) {
         input.value = "";
-        input.placeholder = "•••• (já configurado)";
-      } else if (String(val).includes("••••") && key === "stripe_publishable_key") {
-        input.value = "";
-        input.placeholder = "•••• (já configurado)";
+        input.placeholder = val
+          ? `${val} (configurado — deixe em branco para manter)`
+          : input.placeholder.replace(" (configurado — deixe em branco para manter)", "");
       } else {
-        input.value = val;
+        input.value = val ?? "";
       }
     });
   }
