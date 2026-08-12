@@ -636,6 +636,16 @@ export function getAdminCookieName() {
   return COOKIE_NAME;
 }
 
+export function getAdminToken(request: Request): string | undefined {
+  const cookie = request.headers.get("cookie") || "";
+  const match = cookie.match(/(?:^|;\s*)atelier_admin=([^;]+)/);
+  return match?.[1];
+}
+
+export function isAdminAuthorized(request: Request): boolean {
+  return verifySession(getAdminToken(request));
+}
+
 export async function verifyAdminPassword(password: string): Promise<boolean> {
   const expected = process.env["ADMIN_PASSWORD"];
   if (!expected || !password) return false;
