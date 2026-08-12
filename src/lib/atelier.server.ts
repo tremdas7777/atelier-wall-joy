@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual, createHash } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /* ============================================================
  * Atelier Wallpapers — backend logic (Lovable Cloud port)
