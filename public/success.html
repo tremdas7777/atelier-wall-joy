@@ -167,7 +167,8 @@
 
       function demoData() {
         return {
-          downloadUrl: "#",
+          downloadUrl: "/products/essentiell/Atelier-Essential.zip",
+          downloadReady: true,
           planName: "Essenzielle Kollektion",
           plan: "essentiell",
           orderUid: "AW-DEMO1234",
@@ -177,9 +178,6 @@
 
       if (isPreview) {
         showSuccess(demoData());
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-        });
         return;
       }
 

@@ -16,6 +16,38 @@ const PRODUCT_PATHS: Record<Plan, string> = {
   premium: "premium/Atelier-Premium.zip",
 };
 
+export function normalizeProductPlan(plan: string | undefined | null): Plan {
+  return plan === "premium" ? "premium" : "essentiell";
+}
+
+function localProductAbsolutePath(plan: Plan): string {
+  // Resolved at runtime — dynamic import in async helpers
+  return `public/products/${PRODUCT_PATHS[plan]}`;
+}
+
+export function getProductPublicUrl(plan: Plan): string {
+  return `/products/${PRODUCT_PATHS[plan]}`;
+}
+
+async function localProductStat(plan: Plan) {
+  try {
+    const { stat } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const path = join(process.cwd(), localProductAbsolutePath(plan));
+    const info = await stat(path);
+    const filename = PRODUCT_PATHS[plan].split("/")[1]!;
+    return {
+      exists: true,
+      filename,
+      sizeBytes: info.size,
+      sizeHuman: formatBytes(info.size),
+      updatedAt: info.mtime.toISOString(),
+    };
+  } catch {
+    return { exists: false as const };
+  }
+}
+
 const PRODUCT_LABELS: Record<Plan, string> = {
   essentiell: "Essencial",
   premium: "Premium",
@@ -190,6 +222,7 @@ export async function createOrder(data: {
   download_token: string;
   download_expires_at: string;
 }) {
+  if (!hasSupabaseAdmin()) return;
   await admin().from("orders").insert({
     order_uid: data.order_uid,
     email: data.email,
@@ -205,6 +238,7 @@ export async function createOrder(data: {
 }
 
 export async function getOrderBySessionId(sessionId: string) {
+  if (!hasSupabaseAdmin()) return null;
   const { data } = await admin()
     .from("orders")
     .select("*")
@@ -214,6 +248,7 @@ export async function getOrderBySessionId(sessionId: string) {
 }
 
 export async function getOrderByToken(token: string) {
+  if (!hasSupabaseAdmin()) return null;
   const { data } = await admin()
     .from("orders")
     .select("*")
@@ -223,6 +258,7 @@ export async function getOrderByToken(token: string) {
 }
 
 export async function getOrderByUid(uid: string) {
+  if (!hasSupabaseAdmin()) return null;
   const { data } = await admin()
     .from("orders")
     .select("*")
@@ -282,6 +318,7 @@ export async function trackCheckoutEvent(
   email: string | null,
   metadata: Record<string, unknown> = {},
 ) {
+  if (!hasSupabaseAdmin()) return;
   await admin().from("checkout_events").insert({
     event_type: eventType,
     plan: plan || null,
@@ -406,12 +443,9 @@ export function planDisplayName(plan: string) {
   return plan === "premium" ? "Premium-Kollektion" : "Essenzielle Kollektion";
 }
 
-export function orderDownloadUrl(
-  order: { download_token: string | null; status: string } | null,
-  baseUrl: string,
-) {
-  if (!order?.download_token || order.status !== "paid") return null;
-  return `${baseUrl}/api/download/${order.download_token}`;
+export function orderDownloadUrl(order: { plan: string; status: string }) {
+  if (order.status !== "paid") return null;
+  return getProductPublicUrl(normalizeProductPlan(order.plan));
 }
 
 export function isTokenValid(order: {
@@ -427,10 +461,23 @@ export async function fulfillPaidOrder(
   session: {
     id: string;
     payment_intent: string | null;
-    metadata?: { order_uid?: string } | null;
+    metadata?: { order_uid?: string; plan?: string; customer_name?: string } | null;
+    customer_email?: string | null;
+    client_reference_id?: string | null;
   },
   baseUrl: string,
 ) {
+  if (!hasSupabaseAdmin()) {
+    const plan = normalizeProductPlan(session.metadata?.plan);
+    return {
+      status: "paid",
+      email: session.customer_email || "",
+      plan,
+      order_uid: session.metadata?.order_uid || session.client_reference_id || session.id,
+      download_token: null,
+    };
+  }
+
   let order = await getOrderBySessionId(session.id);
   if (!order && session.metadata?.order_uid) {
     order = await getOrderByUid(session.metadata.order_uid);
@@ -452,15 +499,18 @@ export async function fulfillPaidOrder(
 
   await trackCheckoutEvent("download_ready", order.plan, order.email, {
     order_uid: order.order_uid,
-    download_url: `${baseUrl}/api/download/${order.download_token}`,
+    download_url: getProductPublicUrl(order.plan as Plan),
   });
 
   return order;
 }
 
-/* ---------------- Products (Storage) ---------------- */
+/* ---------------- Products (local files + optional Supabase Storage) ---------------- */
 
 export async function productFileExists(plan: Plan): Promise<boolean> {
+  const local = await localProductStat(plan);
+  if (local.exists) return true;
+  if (!hasSupabaseAdmin()) return false;
   const dir = plan;
   const file = PRODUCT_PATHS[plan].split("/")[1]!;
   const { data, error } = await admin()
@@ -484,6 +534,22 @@ function formatBytes(bytes?: number) {
 
 export async function getProductInfo(plan: Plan) {
   const label = PRODUCT_LABELS[plan];
+  const local = await localProductStat(plan);
+  if (local.exists) {
+    return {
+      plan,
+      label,
+      exists: true,
+      filename: local.filename,
+      sizeBytes: local.sizeBytes,
+      sizeHuman: local.sizeHuman,
+      updatedAt: local.updatedAt,
+      relativePath: PRODUCT_PATHS[plan],
+    };
+  }
+  if (!hasSupabaseAdmin()) {
+    return { plan, label, exists: false };
+  }
   const dir = plan;
   const file = PRODUCT_PATHS[plan].split("/")[1]!;
   const { data, error } = await admin()
@@ -511,15 +577,47 @@ export async function listProductsInfo() {
 }
 
 export async function uploadProduct(plan: Plan, fileBuffer: ArrayBuffer, contentType: string) {
-  const path = PRODUCT_PATHS[plan];
-  const { error } = await admin()
-    .storage.from(PRODUCTS_BUCKET)
-    .upload(path, fileBuffer, { contentType, upsert: true });
-  if (error) throw new Error(error.message);
+  const { writeFile, mkdir } = await import("node:fs/promises");
+  const { join, dirname } = await import("node:path");
+  const localPath = join(process.cwd(), localProductAbsolutePath(plan));
+  await mkdir(dirname(localPath), { recursive: true });
+  await writeFile(localPath, Buffer.from(fileBuffer));
+
+  if (hasSupabaseAdmin()) {
+    const path = PRODUCT_PATHS[plan];
+    await admin()
+      .storage.from(PRODUCTS_BUCKET)
+      .upload(path, fileBuffer, { contentType, upsert: true });
+  }
+
   return getProductInfo(plan);
 }
 
+export async function streamLocalProduct(plan: Plan): Promise<Response> {
+  const local = await localProductStat(plan);
+  if (!local.exists) {
+    return new Response("Produktdatei nicht gefunden.", { status: 404 });
+  }
+  const { readFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const path = join(process.cwd(), localProductAbsolutePath(plan));
+  const data = await readFile(path);
+  return new Response(data, {
+    headers: {
+      "content-type": "application/zip",
+      "content-disposition": `attachment; filename="${local.filename}"`,
+      "cache-control": "private, max-age=3600",
+    },
+  });
+}
+
 export async function createDownloadSignedUrl(plan: Plan, expiresIn = 60) {
+  if (await productFileExists(plan)) {
+    return getProductPublicUrl(plan);
+  }
+  if (!hasSupabaseAdmin()) {
+    throw new Error("Download-URL konnte nicht erstellt werden.");
+  }
   const path = PRODUCT_PATHS[plan];
   const { data, error } = await admin()
     .storage.from(PRODUCTS_BUCKET)
@@ -609,7 +707,9 @@ export async function retrieveCheckoutSession(sessionId: string) {
     payment_status: string;
     status?: string;
     payment_intent: string | null;
-    metadata?: { order_uid?: string; plan?: string } | null;
+    customer_email?: string | null;
+    client_reference_id?: string | null;
+    metadata?: { order_uid?: string; plan?: string; customer_name?: string } | null;
   };
   return json;
 }
@@ -825,7 +925,7 @@ export function buildOrderStatus(
     planName: planDisplayName(order.plan),
     orderUid: order.order_uid,
     paid,
-    downloadUrl: paid && fileReady ? orderDownloadUrl(order, baseUrl) : null,
+    downloadUrl: paid && fileReady ? orderDownloadUrl(order) : null,
     downloadReady: paid && fileReady,
   };
 }
@@ -843,6 +943,30 @@ export async function buildOrderStatusWithDelivery(
   const paid = order.status === "paid";
   const fileReady = paid ? await productFileExists(order.plan as Plan) : false;
   return buildOrderStatus(order, baseUrl, { downloadReady: fileReady });
+}
+
+export async function buildStatusFromStripeSession(
+  session: {
+    id: string;
+    payment_status?: string;
+    status?: string;
+    customer_email?: string | null;
+    client_reference_id?: string | null;
+    metadata?: { order_uid?: string; plan?: string } | null;
+  },
+) {
+  const plan = normalizeProductPlan(session.metadata?.plan);
+  const fileReady = await productFileExists(plan);
+  return {
+    status: "paid",
+    email: session.customer_email || "",
+    plan,
+    planName: planDisplayName(plan),
+    orderUid: session.metadata?.order_uid || session.client_reference_id || session.id,
+    paid: true,
+    downloadUrl: fileReady ? getProductPublicUrl(plan) : null,
+    downloadReady: fileReady,
+  };
 }
 
 export function sanitizeOrder(order: {
