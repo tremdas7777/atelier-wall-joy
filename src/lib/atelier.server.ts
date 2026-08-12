@@ -274,9 +274,10 @@ export async function getAnalytics(days = 30) {
 
   const planMap: Record<string, { count: number; revenue: number }> = {};
   for (const r of (paidRows ?? []).filter((r) => r.status === "paid")) {
-    if (!planMap[r.plan]) planMap[r.plan] = { count: 0, revenue: 0 };
-    planMap[r.plan].count += 1;
-    planMap[r.plan].revenue += r.amount_cents || 0;
+    const key: string = r.plan;
+    if (!planMap[key]) planMap[key] = { count: 0, revenue: 0 };
+    planMap[key]!.count += 1;
+    planMap[key]!.revenue += r.amount_cents || 0;
   }
   const planBreakdown = Object.entries(planMap).map(([plan, v]) => ({ plan, ...v }));
 
