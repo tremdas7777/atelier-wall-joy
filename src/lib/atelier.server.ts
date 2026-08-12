@@ -208,9 +208,9 @@ export async function countOrdersByStatus() {
 
 export async function trackPageView(p: {
   path: string;
-  referrer?: string;
-  userAgent?: string;
-  ipHash?: string;
+  referrer: string | undefined;
+  userAgent: string | undefined;
+  ipHash: string | undefined;
 }) {
   await admin().from("page_views").insert({
     path: p.path,
