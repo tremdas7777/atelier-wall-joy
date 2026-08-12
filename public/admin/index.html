@@ -4,22 +4,28 @@
   <meta charset="utf-8"/>
   <meta name="robots" content="noindex, nofollow"/>
   <title>Admin — Atelier Wallpapers</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" href="/favicon.png" type="image/png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Karla:wght@400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="/admin/styles.css"/>
 </head>
 <body>
   <div id="login-screen" class="screen">
     <form id="login-form" class="card login-card">
+      <img class="brand-mark" src="/assets/artelier-logo.webp" alt="Atelier Wallpapers"/>
       <p class="eyebrow">Atelier Wallpapers</p>
       <h1>Painel Admin</h1>
       <label>Senha<input type="password" name="password" required autocomplete="current-password" autofocus/></label>
       <button type="submit">Entrar</button>
-      <p class="hint">Use <strong>http://localhost:3000/admin/</strong> com <code>npm start</code> ativo.</p>
+      <p class="hint">Acesso restrito. A senha é definida no segredo <code>ADMIN_PASSWORD</code>.</p>
       <p id="login-error" class="error hidden"></p>
     </form>
   </div>
 
   <div id="app" class="hidden">
     <aside class="sidebar">
+      <img class="brand-mark" src="/assets/artelier-logo.webp" alt="Atelier Wallpapers"/>
       <p class="eyebrow">Atelier</p>
       <h2>Admin</h2>
       <nav>
@@ -150,6 +156,6 @@
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script src="/admin/app.js"></script>
 </body>
 </html>
