@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>Admin — Atelier Wallpapers</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div id="login-screen" class="screen">
+    <form id="login-form" class="card login-card">
+      <p class="eyebrow">Atelier Wallpapers</p>
+      <h1>Painel Admin</h1>
+      <label>Senha<input type="password" name="password" required autocomplete="current-password" autofocus/></label>
+      <button type="submit">Entrar</button>
+      <p class="hint">Use <strong>http://localhost:3000/admin/</strong> com <code>npm start</code> ativo.</p>
+      <p id="login-error" class="error hidden"></p>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <aside class="sidebar">
+      <p class="eyebrow">Atelier</p>
+      <h2>Admin</h2>
+      <nav>
+        <button type="button" class="nav-btn is-active" data-view="dashboard">Dashboard</button>
+        <button type="button" class="nav-btn" data-view="live">Live View</button>
+        <button type="button" class="nav-btn" data-view="orders">Pedidos</button>
+        <button type="button" class="nav-btn" data-view="analytics">Análises</button>
+        <button type="button" class="nav-btn" data-view="settings">Configurações</button>
+      </nav>
+      <button type="button" id="logout-btn" class="ghost">Sair</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="view-title">Dashboard</h1>
+        <span id="admin-badge" class="muted">Admin</span>
+      </header>
+
+      <section id="view-dashboard" class="view">
+        <div class="stats-grid">
+          <div class="stat"><span class="stat-label">Receita (30 dias)</span><strong id="stat-revenue">—</strong></div>
+          <div class="stat"><span class="stat-label">Hoje (receita)</span><strong id="stat-today-revenue">—</strong></div>
+          <div class="stat"><span class="stat-label">Pedidos hoje</span><strong id="stat-today-orders">—</strong></div>
+          <div class="stat"><span class="stat-label">Visitas hoje</span><strong id="stat-today-views">—</strong></div>
+        </div>
+        <div class="panel-grid">
+          <div class="panel">
+            <h3>Status dos pedidos</h3>
+            <ul id="status-list" class="list"></ul>
+          </div>
+          <div class="panel">
+            <h3>Sistema</h3>
+            <ul id="system-list" class="list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-live" class="view hidden">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Feed em tempo real</h3>
+            <button type="button" id="refresh-live" class="ghost sm">Atualizar</button>
+          </div>
+          <ul id="live-feed" class="feed"></ul>
+        </div>
+      </section>
+
+      <section id="view-orders" class="view hidden">
+        <div class="panel">
+          <div class="panel-head"><h3>Pedidos</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>E-mail</th><th>Plano</th><th>Valor</th><th>Status</th><th>Pago em</th>
+                </tr>
+              </thead>
+              <tbody id="orders-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-analytics" class="view hidden">
+        <div class="stats-grid">
+          <div class="stat"><span class="stat-label">Receita (30 dias)</span><strong id="an-revenue">—</strong></div>
+          <div class="stat"><span class="stat-label">Essencial</span><strong id="an-essential">—</strong></div>
+          <div class="stat"><span class="stat-label">Premium</span><strong id="an-premium">—</strong></div>
+        </div>
+        <div class="panel-grid">
+          <div class="panel">
+            <h3>Receita por dia</h3>
+            <div id="chart-revenue" class="chart"></div>
+          </div>
+          <div class="panel">
+            <h3>Visitas por dia</h3>
+            <div id="chart-views" class="chart"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-settings" class="view hidden">
+        <form id="settings-form" class="panel settings-form">
+          <h3>Stripe</h3>
+          <p class="hint">Chaves secretas: deixe em branco para manter o valor atual.</p>
+          <label>Publishable Key<input name="stripe_publishable_key" placeholder="pk_live_..." autocomplete="off"/></label>
+          <label>Secret Key<input name="stripe_secret_key" placeholder="•••• (já configurado)" autocomplete="off"/></label>
+          <label>Webhook Secret<input name="stripe_webhook_secret" placeholder="•••• (já configurado)" autocomplete="off"/></label>
+          <p class="hint">Webhook URL: <code id="webhook-url"></code> · Evento: <code>checkout.session.completed</code></p>
+
+          <h3>Produtos (upload ZIP)</h3>
+          <p class="hint">Envie um arquivo .zip por plano. Após pagamento confirmado, o cliente faz o download na página de obrigado.</p>
+
+          <div class="upload-grid">
+            <div class="upload-card">
+              <h4>Essencial</h4>
+              <p id="product-status-essentiell" class="product-status muted">Carregando…</p>
+              <label class="upload-label">
+                <input type="file" id="upload-essentiell" accept=".zip,application/zip" hidden/>
+                <span class="upload-btn">Escolher ZIP</span>
+              </label>
+              <button type="button" class="ghost sm upload-submit" data-plan="essentiell" disabled>Enviar Essencial</button>
+            </div>
+            <div class="upload-card">
+              <h4>Premium</h4>
+              <p id="product-status-premium" class="product-status muted">Carregando…</p>
+              <label class="upload-label">
+                <input type="file" id="upload-premium" accept=".zip,application/zip" hidden/>
+                <span class="upload-btn">Escolher ZIP</span>
+              </label>
+              <button type="button" class="ghost sm upload-submit" data-plan="premium" disabled>Enviar Premium</button>
+            </div>
+          </div>
+          <p id="upload-msg" class="hint"></p>
+
+          <h3>Preços e loja</h3>
+          <div class="row">
+            <label>Preço Essencial (centavos)<input name="essential_price_cents" type="number"/></label>
+            <label>Preço Premium (centavos)<input name="premium_price_cents" type="number"/></label>
+          </div>
+          <label>Nome da loja<input name="store_name"/></label>
+          <label>E-mail de suporte<input name="support_email" type="email"/></label>
+
+          <button type="submit" class="primary">Salvar configurações</button>
+          <p id="settings-msg" class="hint"></p>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
