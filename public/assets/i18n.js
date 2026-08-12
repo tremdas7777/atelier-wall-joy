@@ -2,6 +2,7 @@
   "use strict";
 
   var STORAGE_KEY = "atelier-lang";
+  var MANUAL_KEY = "atelier-lang-manual";
   var DEFAULT_LANG = "de";
   var FALLBACK_LANG = "en";
   var BLOCKED_PATH = "unavailable.html";
@@ -24,6 +25,7 @@
   var currentDetect = null;
   var currentPricing = null;
   var socialManifest = null;
+  var switchSeq = 0;
 
   var socialManifestPromise = fetchJson("assets/social/manifest.json")
     .then(function (m) {
@@ -83,9 +85,26 @@
     }
   }
 
-  function saveLang(lang) {
+  function isManualLangChoice() {
+    try {
+      return localStorage.getItem(MANUAL_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Language chosen by visitor (URL preview or manual header pick). Null = use geo. */
+  function getLangOverride() {
+    var query = normalizeLang(getQueryLang());
+    if (query) return query;
+    if (isManualLangChoice()) return normalizeLang(getSavedLang());
+    return null;
+  }
+
+  function saveManualLang(lang) {
     try {
       localStorage.setItem(STORAGE_KEY, lang);
+      localStorage.setItem(MANUAL_KEY, "1");
     } catch (e) {}
   }
 
@@ -127,33 +146,44 @@
     });
   }
 
+  function normalizeLang(lang) {
+    if (!lang) return null;
+    lang = String(lang).toLowerCase().split("-")[0];
+    return SUPPORTED_LANGS.indexOf(lang) >= 0 ? lang : null;
+  }
+
   function loadBundle(lang) {
+    lang = normalizeLang(lang) || DEFAULT_LANG;
     if (bundleCache[lang]) return Promise.resolve(bundleCache[lang]);
-    var chain = [lang];
-    if (lang !== FALLBACK_LANG) chain.push(FALLBACK_LANG);
-    if (lang !== DEFAULT_LANG) chain.push(DEFAULT_LANG);
-    var seen = Object.create(null);
-    chain = chain.filter(function (l) {
-      if (seen[l]) return false;
-      seen[l] = true;
-      return true;
-    });
-    return chain
-      .reduce(function (acc, code) {
-        return acc.then(function (merged) {
-          return fetchJson("assets/locales/" + code + ".json")
-            .then(function (bundle) {
-              return merged ? mergeBundles(bundle, merged) : bundle;
-            })
-            .catch(function () {
-              return merged;
+
+    var fallbacks = [];
+    if (lang !== FALLBACK_LANG) fallbacks.push(FALLBACK_LANG);
+    if (lang !== DEFAULT_LANG) fallbacks.push(DEFAULT_LANG);
+
+    return fetchJson("assets/locales/" + lang + ".json")
+      .catch(function () {
+        return null;
+      })
+      .then(function (primary) {
+        return fallbacks
+          .reduce(function (acc, code) {
+            return acc.then(function (merged) {
+              return fetchJson("assets/locales/" + code + ".json")
+                .catch(function () {
+                  return null;
+                })
+                .then(function (fb) {
+                  if (!fb) return merged;
+                  if (!merged) return fb;
+                  return mergeBundles(merged, fb);
+                });
             });
-        });
-      }, Promise.resolve(null))
-      .then(function (bundle) {
-        if (!bundle) return fetchJson("assets/locales/" + DEFAULT_LANG + ".json");
-        bundleCache[lang] = bundle;
-        return bundle;
+          }, Promise.resolve(primary))
+          .then(function (bundle) {
+            if (!bundle) return fetchJson("assets/locales/" + DEFAULT_LANG + ".json");
+            bundleCache[lang] = bundle;
+            return bundle;
+          });
       });
   }
 
@@ -324,6 +354,14 @@
     renderCheckoutPlan();
   }
 
+  function setSwitcherBusy(busy) {
+    var wrap = document.getElementById("atelier-lang-switch");
+    if (!wrap) return;
+    wrap.classList.toggle("lang-switch--busy", busy);
+    var select = wrap.querySelector("select");
+    if (select) select.setAttribute("aria-busy", busy ? "true" : "false");
+  }
+
   function ensureLangSwitcher() {
     if (document.getElementById("atelier-lang-switch")) return;
     var host =
@@ -347,8 +385,11 @@
       select.appendChild(opt);
     });
 
-    select.addEventListener("change", function () {
-      switchLanguage(select.value);
+    select.addEventListener("change", function (ev) {
+      ev.stopPropagation();
+      var next = normalizeLang(select.value) || DEFAULT_LANG;
+      if (next === currentLang && currentBundle) return;
+      switchLanguage(next);
     });
 
     wrap.appendChild(select);
@@ -357,32 +398,72 @@
 
   function updateLangSwitcher(lang) {
     var select = document.querySelector("#atelier-lang-switch select");
-    if (select) select.value = lang;
+    if (!select) return;
+    if (select.value !== lang) select.value = lang;
   }
 
   function switchLanguage(lang) {
-    saveLang(lang);
-    return resolveLocale(lang).then(function (det) {
-      currentDetect = det;
-      currentPricing = det.pricing || currentPricing;
-      window.ATELIER_COUNTRY = det.country || window.ATELIER_COUNTRY;
-      window.ATELIER_PRICING = currentPricing;
-      syncConfig();
-      return loadBundle(lang).then(function (bundle) {
+    lang = normalizeLang(lang) || DEFAULT_LANG;
+    if (lang === currentLang && currentBundle) {
+      updateLangSwitcher(lang);
+      return Promise.resolve();
+    }
+
+    var seq = ++switchSeq;
+    saveManualLang(lang);
+    updateLangSwitcher(lang);
+    setSwitcherBusy(true);
+
+    var country = getQueryCountry() || window.ATELIER_COUNTRY;
+    var pricingPromise = country
+      ? fetchDetect(country, lang)
+          .then(function (det) {
+            return det.pricing || null;
+          })
+          .catch(function () {
+            return null;
+          })
+      : Promise.resolve(null);
+
+    return Promise.all([loadBundle(lang), pricingPromise])
+      .then(function (results) {
+        if (seq !== switchSeq) return;
+        var bundle = results[0];
+        if (results[1]) {
+          currentPricing = results[1];
+          window.ATELIER_PRICING = currentPricing;
+        }
         currentBundle = bundle;
-        applyLang(lang, det.htmlLang);
+        var meta = bundle.meta || {};
+        applyLang(lang, meta.htmlLang || lang);
+      })
+      .catch(function (err) {
+        if (seq !== switchSeq) return;
+        console.warn("[atelier-i18n] language switch failed", err);
+        return loadBundle(DEFAULT_LANG).then(function (bundle) {
+          if (seq !== switchSeq) return;
+          currentBundle = bundle;
+          applyLang(DEFAULT_LANG);
+          updateLangSwitcher(DEFAULT_LANG);
+        });
+      })
+      .finally(function () {
+        if (seq === switchSeq) setSwitcherBusy(false);
       });
-    });
   }
 
   function syncConfig() {
     if (!currentPricing || !window.ATELIER_CONFIG) return;
+    var essential = currentPricing.essential;
+    var premium = currentPricing.premium;
+    if (!essential || !premium) return;
+
     window.ATELIER_CONFIG.currency = currentPricing.currency || "EUR";
     window.ATELIER_CONFIG.prices = {
       essentiell: {
-        amount: currentPricing.essential.formatted,
-        cents: currentPricing.essential.cents,
-        eurCents: currentPricing.essential.eurCents,
+        amount: essential.formatted,
+        cents: essential.cents,
+        eurCents: essential.eurCents,
         name:
           (currentBundle &&
             currentBundle.checkoutPlans &&
@@ -391,9 +472,9 @@
           "Essential",
       },
       premium: {
-        amount: currentPricing.premium.formatted,
-        cents: currentPricing.premium.cents,
-        eurCents: currentPricing.premium.eurCents,
+        amount: premium.formatted,
+        cents: premium.cents,
+        eurCents: premium.eurCents,
         name:
           (currentBundle &&
             currentBundle.checkoutPlans &&
@@ -407,22 +488,26 @@
   function applyLang(lang, htmlLang) {
     if (!currentBundle) return;
     currentLang = lang;
-    saveLang(lang);
 
     var T = currentBundle.t || {};
     var HTML = currentBundle.html || {};
     var META = currentBundle.meta || {};
+    var scrollY = window.scrollY;
 
     document.documentElement.lang = htmlLang || META.htmlLang || lang;
 
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var key = el.getAttribute("data-i18n");
-      if (T[key] != null) el.textContent = interpolate(T[key]);
+      if (T[key] == null) return;
+      var next = interpolate(T[key]);
+      if (el.textContent !== next) el.textContent = next;
     });
 
     document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
       var key = el.getAttribute("data-i18n-html");
-      if (HTML[key] != null) el.innerHTML = interpolate(HTML[key]);
+      if (HTML[key] == null) return;
+      var next = interpolate(HTML[key]);
+      if (el.innerHTML !== next) el.innerHTML = next;
     });
 
     document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
@@ -482,13 +567,21 @@
         detail: { lang: lang, country: window.ATELIER_COUNTRY, pricing: currentPricing },
       })
     );
+
+    if (Math.abs(window.scrollY - scrollY) > 2) {
+      window.scrollTo(0, scrollY);
+    }
   }
 
   function boot() {
     if (isBlockedPage()) return;
 
-    var lang = getQueryLang() || getSavedLang() || null;
-    resolveLocale(lang).then(function (det) {
+    ensureLangSwitcher();
+
+    var langOverride = getLangOverride();
+    updateLangSwitcher(langOverride || DEFAULT_LANG);
+
+    resolveLocale(langOverride).then(function (det) {
       if (det.blocked) {
         window.location.replace(BLOCKED_PATH);
         return;
@@ -499,12 +592,21 @@
       window.ATELIER_COUNTRY = det.country || null;
       window.ATELIER_LOCALE_SOURCE = det.source || "default";
       window.ATELIER_PRICING = currentPricing;
+      window.ATELIER_LANG_SOURCE = langOverride ? "manual" : det.source || "geo";
 
-      var resolvedLang = getQueryLang() || lang || det.language || DEFAULT_LANG;
+      var resolvedLang =
+        normalizeLang(getQueryLang()) ||
+        langOverride ||
+        normalizeLang(det.language) ||
+        DEFAULT_LANG;
       return socialManifestPromise.then(function () {
         return loadBundle(resolvedLang).then(function (bundle) {
           currentBundle = bundle;
-          applyLang(resolvedLang, det.htmlLang);
+          var htmlLang =
+            det.htmlLang ||
+            (bundle.meta && bundle.meta.htmlLang) ||
+            resolvedLang;
+          applyLang(resolvedLang, htmlLang);
         });
       });
     });
@@ -519,6 +621,9 @@
     },
     getPricing: function () {
       return currentPricing;
+    },
+    isManualLang: function () {
+      return isManualLangChoice();
     },
     applyLang: switchLanguage,
     t: function (key) {

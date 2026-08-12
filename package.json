@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "locales:build": "node scripts/build-eu-locales.mjs",
     "locales:sync": "node scripts/sync-locale-templates.mjs",
+    "legal:extract": "node scripts/extract-legal-master.mjs",
+    "legal:sync": "node scripts/sync-legal-locales.mjs",
     "social:render": "python3 scripts/extract-social-photos.py && node scripts/render-social-screenshots.mjs"
   },
   "dependencies": {

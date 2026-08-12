@@ -11,18 +11,20 @@
   <link rel="stylesheet" href="assets/styles.css"/>
   <link rel="stylesheet" href="assets/de.css"/>
 </head>
-<body class="legal-page text-foreground">
+<body class="legal-page text-foreground" data-i18n-page="datenschutz">
   <header class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
     <a href="index.html" class="flex items-center">
       <img src="assets/artelier-logo-tkncU2qU.webp" alt="Artelier Wallpapers" class="h-16 w-auto md:h-20"/>
     </a>
-    <nav class="hidden items-center gap-8 text-[12px] uppercase tracking-[0.25em] text-foreground/80 md:flex">
-      <a href="index.html#galeria" class="hover:text-gold">Galerie</a>
-      <a href="index.html#oferta" class="hover:text-gold">Angebot</a>
-      <a href="impressum.html" class="hover:text-gold">Impressum</a>
-    </nav>
+    <div class="flex items-center gap-6">
+      <nav class="hidden items-center gap-8 text-[12px] uppercase tracking-[0.25em] text-foreground/80 md:flex">
+        <a href="index.html#galeria" class="hover:text-gold" data-i18n="common.gallery">Galerie</a>
+        <a href="index.html#oferta" class="hover:text-gold" data-i18n="common.offer">Angebot</a>
+        <a href="impressum.html" class="hover:text-gold" data-i18n="common.imprint">Impressum</a>
+      </nav>
+    </div>
   </header>
-  <main class="legal-wrap">
+  <main class="legal-wrap" data-i18n-html="legal.datenschutz">
 
 <h1>Datenschutzerklärung</h1>
 <p>Der Schutz deiner Daten ist uns wichtig. Diese Erklärung informiert dich gemäß DSGVO über die Verarbeitung personenbezogener Daten auf dieser Website.</p>
@@ -58,13 +60,14 @@
   </main>
   <footer class="border-t border-white/10 px-6 py-8 text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
     <div class="flex flex-wrap justify-center gap-6">
-      <a href="agb.html">AGB</a>
-      <a href="datenschutz.html">Datenschutz</a>
-      <a href="widerruf.html">Widerruf</a>
-      <a href="impressum.html">Impressum</a>
-      <a href="hilfe.html">Hilfe</a>
+      <a href="agb.html" data-i18n="footer.agb">AGB</a>
+      <a href="datenschutz.html" data-i18n="footer.privacy">Datenschutz</a>
+      <a href="widerruf.html" data-i18n="footer.widerruf">Widerruf</a>
+      <a href="impressum.html" data-i18n="footer.imprint">Impressum</a>
+      <a href="hilfe.html" data-i18n="footer.help">Hilfe</a>
     </div>
-    <p class="mt-4">© 2026 Atelier Wallpapers. Alle Rechte vorbehalten.</p>
+    <p class="mt-4" data-i18n="footer.copyright">© 2026 Atelier Wallpapers. Alle Rechte vorbehalten.</p>
   </footer>
+  <script src="assets/i18n.js"></script>
 </body>
 </html>

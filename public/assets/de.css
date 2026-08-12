@@ -120,6 +120,13 @@
   background-repeat: no-repeat;
   background-position: right 0.45rem center;
 }
+.lang-switch--busy {
+  opacity: 0.72;
+  pointer-events: none;
+}
+.lang-switch--busy .lang-switch-select {
+  cursor: wait;
+}
 
 /* Success / thank-you page */
 .success-page {
