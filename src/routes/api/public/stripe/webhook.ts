@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook")({
 
         let event;
         try {
-          event = constructWebhookEvent(rawBody, signature);
+          event = await constructWebhookEvent(rawBody, signature);
         } catch (err) {
           console.error("webhook signature error:", err);
           return new Response(`Webhook Error: ${err instanceof Error ? err.message : "ungültig"}`, {
