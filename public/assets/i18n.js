@@ -26,6 +26,17 @@
   var currentPricing = null;
   var socialManifest = null;
   var switchSeq = 0;
+  var bootSeq = 0;
+  var DETECT_CACHE_KEY = "atelier-detect-v1";
+  var DETECT_CACHE_TTL = 300000;
+
+  var COUNTRY_PRIMARY_LANG = {
+    DE: "de", AT: "de", LI: "de", BE: "nl", BG: "bg", HR: "hr", DK: "da", SK: "sk", SI: "sl",
+    ES: "es", EE: "et", FI: "fi", FR: "fr", GR: "el", HU: "hu", IE: "en", IS: "is", IT: "it",
+    LV: "lv", LT: "lt", LU: "fr", MT: "mt", MC: "fr", ME: "sr", NL: "nl", PL: "pl", PT: "pt",
+    CZ: "cs", RO: "ro", SM: "it", RS: "sr", SE: "sv", CH: "de", UA: "uk", VA: "it", AD: "ca",
+    CY: "el", NO: "no",
+  };
 
   var socialManifestPromise = fetchJson("assets/social/manifest.json")
     .then(function (m) {
@@ -108,6 +119,78 @@
     } catch (e) {}
   }
 
+  function readDetectCache() {
+    try {
+      var raw = sessionStorage.getItem(DETECT_CACHE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.payload || Date.now() - parsed.ts > DETECT_CACHE_TTL) return null;
+      return parsed.payload;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeDetectCache(det) {
+    try {
+      sessionStorage.setItem(
+        DETECT_CACHE_KEY,
+        JSON.stringify({ ts: Date.now(), payload: det }),
+      );
+    } catch (e) {}
+  }
+
+  function guessFromNavigator() {
+    var list = navigator.languages || (navigator.language ? [navigator.language] : []);
+    for (var i = 0; i < list.length; i++) {
+      var code = normalizeLang(list[i]);
+      if (code) return code;
+    }
+    return DEFAULT_LANG;
+  }
+
+  function guessLangFromSignals() {
+    if (window.__ATELIER_GUESS_LANG__) {
+      return normalizeLang(window.__ATELIER_GUESS_LANG__) || DEFAULT_LANG;
+    }
+    var boot = window.__ATELIER_BOOT__;
+    if (boot && boot.language) return normalizeLang(boot.language) || DEFAULT_LANG;
+    var country = getQueryCountry();
+    if (country && COUNTRY_PRIMARY_LANG[country]) return COUNTRY_PRIMARY_LANG[country];
+    var cached = readDetectCache();
+    if (cached && cached.language) return normalizeLang(cached.language) || DEFAULT_LANG;
+    return guessFromNavigator();
+  }
+
+  function markI18nReady() {
+    document.documentElement.classList.remove("i18n-pending");
+    document.documentElement.classList.add("i18n-ready");
+  }
+
+  function resolveLocaleFast(langOverride) {
+    var countryOverride = getQueryCountry();
+    var boot = window.__ATELIER_BOOT__;
+
+    if (boot && boot.pricing && !langOverride) {
+      if (!countryOverride || boot.country === countryOverride) {
+        return Promise.resolve(boot);
+      }
+    }
+
+    var cached = readDetectCache();
+    if (cached && cached.pricing && !langOverride) {
+      if (!countryOverride || cached.country === countryOverride) {
+        return Promise.resolve(cached);
+      }
+    }
+
+    return resolveLocale(langOverride).then(function (det) {
+      writeDetectCache(det);
+      window.__ATELIER_BOOT__ = det;
+      return det;
+    });
+  }
+
   function isBlockedPage() {
     return /(^|\/)unavailable\.html$/i.test(window.location.pathname);
   }
@@ -160,7 +243,17 @@
     if (lang !== FALLBACK_LANG) fallbacks.push(FALLBACK_LANG);
     if (lang !== DEFAULT_LANG) fallbacks.push(DEFAULT_LANG);
 
-    return fetchJson("assets/locales/" + lang + ".json")
+    var primaryFetch =
+      lang === window.__ATELIER_GUESS_LANG__ && window.__ATELIER_BUNDLE_PREFETCH__
+        ? window.__ATELIER_BUNDLE_PREFETCH__.then(function (res) {
+            if (!res.ok) throw new Error("missing prefetch");
+            return res.json();
+          }).catch(function () {
+            return fetchJson("assets/locales/" + lang + ".json");
+          })
+        : fetchJson("assets/locales/" + lang + ".json");
+
+    return primaryFetch
       .catch(function () {
         return null;
       })
@@ -202,7 +295,7 @@
   function clientGeoCountry() {
     return fetch("https://ipapi.co/country_code/", {
       credentials: "omit",
-      signal: typeof AbortSignal !== "undefined" ? AbortSignal.timeout(4000) : undefined,
+      signal: typeof AbortSignal !== "undefined" ? AbortSignal.timeout(2500) : undefined,
     })
       .then(function (res) {
         return res.ok ? res.text() : Promise.reject();
@@ -568,6 +661,8 @@
       })
     );
 
+    markI18nReady();
+
     if (Math.abs(window.scrollY - scrollY) > 2) {
       window.scrollTo(0, scrollY);
     }
@@ -579,9 +674,32 @@
     ensureLangSwitcher();
 
     var langOverride = getLangOverride();
-    updateLangSwitcher(langOverride || DEFAULT_LANG);
+    var guessLang = langOverride || guessLangFromSignals();
+    updateLangSwitcher(guessLang);
 
-    resolveLocale(langOverride).then(function (det) {
+    var bootData = window.__ATELIER_BOOT__;
+    if (bootData && bootData.pricing) {
+      currentPricing = bootData.pricing;
+      window.ATELIER_PRICING = currentPricing;
+      window.ATELIER_COUNTRY = bootData.country || null;
+    }
+
+    var seq = ++bootSeq;
+    var fastBundle = loadBundle(guessLang);
+
+    fastBundle.then(function (bundle) {
+      if (seq !== bootSeq) return;
+      currentBundle = bundle;
+      var bootData = window.__ATELIER_BOOT__;
+      var meta = bundle.meta || {};
+      applyLang(
+        guessLang,
+        (bootData && bootData.htmlLang) || (meta && meta.htmlLang) || guessLang,
+      );
+    });
+
+    resolveLocaleFast(langOverride).then(function (det) {
+      if (seq !== bootSeq) return;
       if (det.blocked) {
         window.location.replace(BLOCKED_PATH);
         return;
@@ -599,17 +717,33 @@
         langOverride ||
         normalizeLang(det.language) ||
         DEFAULT_LANG;
-      return socialManifestPromise.then(function () {
-        return loadBundle(resolvedLang).then(function (bundle) {
-          currentBundle = bundle;
-          var htmlLang =
-            det.htmlLang ||
-            (bundle.meta && bundle.meta.htmlLang) ||
-            resolvedLang;
-          applyLang(resolvedLang, htmlLang);
+
+      if (resolvedLang === guessLang && currentBundle) {
+        applyDynamicPrices();
+        syncConfig();
+        socialManifestPromise.then(function () {
+          applySocialImages(resolvedLang, window.ATELIER_COUNTRY);
         });
+        return;
+      }
+
+      return loadBundle(resolvedLang).then(function (bundle) {
+        if (seq !== bootSeq) return;
+        currentBundle = bundle;
+        applyLang(
+          resolvedLang,
+          det.htmlLang || (bundle.meta && bundle.meta.htmlLang) || resolvedLang,
+        );
       });
     });
+
+    socialManifestPromise.then(function () {
+      if (currentLang) applySocialImages(currentLang, window.ATELIER_COUNTRY);
+    });
+
+    setTimeout(function () {
+      if (document.documentElement.classList.contains("i18n-pending")) markI18nReady();
+    }, 3500);
   }
 
   window.ATELIER_I18N = {
