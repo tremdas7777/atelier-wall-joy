@@ -110,10 +110,10 @@
       <section id="view-settings" class="view hidden">
         <form id="settings-form" class="panel settings-form">
           <h3>Stripe</h3>
-          <p class="hint">As chaves do Stripe são gerenciadas como segredos do servidor (não editáveis aqui). Configure-as nas variáveis de ambiente do projeto.</p>
-          <label>Publishable Key<input name="stripe_publishable_key" placeholder="gerenciado no servidor" autocomplete="off" disabled/></label>
-          <label>Secret Key<input name="stripe_secret_key" placeholder="gerenciado no servidor" autocomplete="off" disabled/></label>
-          <label>Webhook Secret<input name="stripe_webhook_secret" placeholder="gerenciado no servidor" autocomplete="off" disabled/></label>
+          <p class="hint">Cole suas chaves do Stripe abaixo. Elas ficam salvas com segurança no servidor; deixe em branco para manter a chave atual.</p>
+          <label>Publishable Key<input name="stripe_publishable_key" placeholder="pk_live_…" autocomplete="off"/></label>
+          <label>Secret Key<input name="stripe_secret_key" type="password" placeholder="sk_live_…" autocomplete="off"/></label>
+          <label>Webhook Secret<input name="stripe_webhook_secret" type="password" placeholder="whsec_…" autocomplete="off"/></label>
           <p class="hint">Webhook URL: <code id="webhook-url"></code> · Evento: <code>checkout.session.completed</code></p>
 
           <h3>Produtos (upload ZIP)</h3>

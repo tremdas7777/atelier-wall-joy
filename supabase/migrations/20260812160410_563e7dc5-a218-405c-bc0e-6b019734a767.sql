@@ -1,0 +1,1 @@
+delete from public.settings where key in ('stripe_secret_key','stripe_publishable_key','stripe_webhook_secret');

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/admin/dashboard")({
           analytics,
           live,
           today,
-          stripeConfigured: isStripeConfigured(),
+          stripeConfigured: await isStripeConfigured(),
           products: {
             essentiell: await productFileExists("essentiell"),
             premium: await productFileExists("premium"),

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/order/status")({
         const baseUrl = new URL(request.url).origin;
         let order = await getOrderBySessionId(String(sessionId));
 
-        if (isStripeConfigured()) {
+        if (await isStripeConfigured()) {
           const session = await retrieveCheckoutSession(String(sessionId));
           if (session && session.payment_status === "paid") {
             if (!order) return Response.json({ error: "Bestellung nicht gefunden." }, { status: 404 });

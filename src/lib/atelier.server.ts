@@ -473,13 +473,24 @@ export async function createDownloadSignedUrl(plan: Plan, expiresIn = 60) {
 
 /* ---------------- Stripe (raw REST, edge-safe) ---------------- */
 
-function stripeSecret(): string | null {
-  const key = process.env["STRIPE_SECRET_KEY"];
-  return key || null;
+async function stripeSecret(): Promise<string | null> {
+  const fromDb = (await getSetting("stripe_secret_key", "")).trim();
+  if (fromDb) return fromDb;
+  return process.env["STRIPE_SECRET_KEY"] || null;
 }
 
-export function isStripeConfigured() {
-  return Boolean(process.env["STRIPE_SECRET_KEY"]);
+export async function stripePublishableKey(): Promise<string> {
+  const fromDb = (await getSetting("stripe_publishable_key", "")).trim();
+  return fromDb || process.env["STRIPE_PUBLISHABLE_KEY"] || "";
+}
+
+export async function stripeWebhookSecret(): Promise<string> {
+  const fromDb = (await getSetting("stripe_webhook_secret", "")).trim();
+  return fromDb || process.env["STRIPE_WEBHOOK_SECRET"] || "";
+}
+
+export async function isStripeConfigured(): Promise<boolean> {
+  return Boolean(await stripeSecret());
 }
 
 export async function createCheckoutSession(args: {
@@ -490,7 +501,7 @@ export async function createCheckoutSession(args: {
   cancelUrl: string;
   orderUid: string;
 }) {
-  const secret = stripeSecret();
+  const secret = await stripeSecret();
   if (!secret) throw new Error("Stripe ist nicht konfiguriert.");
   const cfg = await planConfig(args.plan);
 
@@ -529,7 +540,7 @@ export async function createCheckoutSession(args: {
 }
 
 export async function retrieveCheckoutSession(sessionId: string) {
-  const secret = stripeSecret();
+  const secret = await stripeSecret();
   if (!secret) return null;
   const res = await fetch(
     `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
@@ -545,8 +556,8 @@ export async function retrieveCheckoutSession(sessionId: string) {
   return json;
 }
 
-export function constructWebhookEvent(rawBody: string, signatureHeader: string) {
-  const secret = process.env["STRIPE_WEBHOOK_SECRET"];
+export async function constructWebhookEvent(rawBody: string, signatureHeader: string) {
+  const secret = await stripeWebhookSecret();
   if (!secret) throw new Error("Webhook nicht konfiguriert.");
   const parts = Object.fromEntries(
     signatureHeader

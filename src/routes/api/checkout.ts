@@ -35,7 +35,7 @@ export const Route = createFileRoute("/api/checkout")({
         const baseUrl = new URL(request.url).origin;
         const orderUid = newOrderUid();
 
-        if (!isStripeConfigured()) {
+        if (!(await isStripeConfigured())) {
           return Response.json(
             { error: "Pagamento indisponível no momento." },
             { status: 503 },
