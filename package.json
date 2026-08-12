@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "locales:build": "node scripts/build-eu-locales.mjs",
-    "locales:sync": "node scripts/sync-locale-templates.mjs"
+    "locales:sync": "node scripts/sync-locale-templates.mjs",
+    "social:render": "python3 scripts/extract-social-photos.py && node scripts/render-social-screenshots.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -82,6 +83,7 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
+    "playwright": "^1.62.1",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",

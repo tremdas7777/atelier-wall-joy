@@ -23,11 +23,54 @@
   var currentBundle = null;
   var currentDetect = null;
   var currentPricing = null;
+  var socialManifest = null;
+
+  var socialManifestPromise = fetchJson("assets/social/manifest.json")
+    .then(function (m) {
+      socialManifest = m;
+      return m;
+    })
+    .catch(function () {
+      return null;
+    });
+
+  function resolveSocialSet(lang, country) {
+    if (!socialManifest) return "de";
+    var cc = (country || "").toLowerCase();
+    var l = (lang || DEFAULT_LANG).toLowerCase();
+    if (cc && socialManifest.languageMap[cc]) return socialManifest.languageMap[cc];
+    if (socialManifest.languages[l]) return l;
+    var fb = socialManifest.fallback || ["en", "de"];
+    for (var i = 0; i < fb.length; i++) {
+      if (socialManifest.languages[fb[i]]) return fb[i];
+    }
+    return "de";
+  }
+
+  function applySocialImages(lang, country) {
+    if (!socialManifest) return;
+    var set = resolveSocialSet(lang, country);
+    var files = socialManifest.languages[set] || socialManifest.languages.de;
+    if (!files) return;
+    document.querySelectorAll("#social-track img").forEach(function (img, i) {
+      if (!files[i]) return;
+      var next = "assets/social/" + files[i];
+      if (img.getAttribute("src") !== next) img.setAttribute("src", next);
+    });
+  }
 
   function getQueryLang() {
     try {
       var q = new URLSearchParams(window.location.search).get("lang");
       if (q) return q.toLowerCase().split("-")[0];
+    } catch (e) {}
+    return null;
+  }
+
+  function getQueryCountry() {
+    try {
+      var q = new URLSearchParams(window.location.search).get("country");
+      if (q) return q.trim().toUpperCase();
     } catch (e) {}
     return null;
   }
@@ -144,18 +187,19 @@
   }
 
   function resolveLocale(langOverride) {
-    return fetchDetect(null, langOverride || null)
+    var countryOverride = getQueryCountry();
+    return fetchDetect(countryOverride, langOverride || null)
       .catch(function () {
         return {
-          country: null,
-          language: DEFAULT_LANG,
+          country: countryOverride || null,
+          language: langOverride || DEFAULT_LANG,
           blocked: false,
-          source: "default",
+          source: countryOverride ? "geo" : "default",
           pricing: null,
         };
       })
       .then(function (det) {
-        if (det.country || det.source !== "default" || langOverride) return det;
+        if (det.country || det.source !== "default" || langOverride || countryOverride) return det;
         return clientGeoCountry().then(function (cc) {
           if (!cc) return det;
           return fetchDetect(cc, langOverride || null).catch(function () {
@@ -428,6 +472,7 @@
     ensureLangSwitcher();
     updateLangSwitcher(lang);
     applyDynamicPrices();
+    applySocialImages(lang, window.ATELIER_COUNTRY);
     syncConfig();
 
     window.ATELIER_LANG = lang;
@@ -456,9 +501,11 @@
       window.ATELIER_PRICING = currentPricing;
 
       var resolvedLang = getQueryLang() || lang || det.language || DEFAULT_LANG;
-      return loadBundle(resolvedLang).then(function (bundle) {
-        currentBundle = bundle;
-        applyLang(resolvedLang, det.htmlLang);
+      return socialManifestPromise.then(function () {
+        return loadBundle(resolvedLang).then(function (bundle) {
+          currentBundle = bundle;
+          applyLang(resolvedLang, det.htmlLang);
+        });
       });
     });
   }

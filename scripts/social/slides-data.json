@@ -1,0 +1,104 @@
+{
+  "ui": {
+    "de": { "followers": "Follower", "posts": "Beiträge", "noFollow": "Ihr folgt euch nicht auf Instagram", "viewProfile": "Profil ansehen", "message": "Nachricht...", "youReplied": "Du hast geantwortet" },
+    "en": { "followers": "followers", "posts": "posts", "noFollow": "You don't follow each other on Instagram", "viewProfile": "View profile", "message": "Message...", "youReplied": "You replied" },
+    "fr": { "followers": "abonnés", "posts": "publications", "noFollow": "Vous ne vous suivez pas sur Instagram", "viewProfile": "Voir le profil", "message": "Message...", "youReplied": "Vous avez répondu" },
+    "es": { "followers": "seguidores", "posts": "publicaciones", "noFollow": "No os seguís en Instagram", "viewProfile": "Ver perfil", "message": "Mensaje...", "youReplied": "Has respondido" },
+    "it": { "followers": "follower", "posts": "post", "noFollow": "Non vi seguite su Instagram", "viewProfile": "Visualizza profilo", "message": "Messaggio...", "youReplied": "Hai risposto" },
+    "nl": { "followers": "volgers", "posts": "berichten", "noFollow": "Jullie volgen elkaar niet op Instagram", "viewProfile": "Profiel bekijken", "message": "Bericht...", "youReplied": "Je hebt geantwoord" },
+    "pl": { "followers": "obserwujących", "posts": "postów", "noFollow": "Nie obserwujecie się nawzajem na Instagramie", "viewProfile": "Zobacz profil", "message": "Wiadomość...", "youReplied": "Odpowiedziałeś(-aś)" },
+    "pt": { "followers": "seguidores", "posts": "publicações", "noFollow": "Vocês não se seguem no Instagram", "viewProfile": "Ver perfil", "message": "Mensagem...", "youReplied": "Você respondeu" }
+  },
+  "slides": [
+    {
+      "id": 1,
+      "stats": "29 · 3",
+      "messages": {
+        "de": [{ "from": "them", "text": "Alles klar" }, { "from": "them", "text": "Richtig geil" }, { "from": "them", "text": "Hey — schau mein Setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "Die Wallpapers sind richtig nice" }, { "from": "me", "text": "Dein Setup ist richtig krass — besonders mit den Wallpapers 🔥" }],
+        "en": [{ "from": "them", "text": "All good" }, { "from": "them", "text": "Looks amazing" }, { "from": "them", "text": "Hey — check my setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "The wallpapers are so nice" }, { "from": "me", "text": "Your setup is insane — especially with the wallpapers 🔥" }],
+        "fr": [{ "from": "them", "text": "D'accord" }, { "from": "them", "text": "Trop beau" }, { "from": "them", "text": "Hey — regarde mon setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "Les fonds d'écran sont top" }, { "from": "me", "text": "Ton setup est fou — surtout avec les wallpapers 🔥" }],
+        "es": [{ "from": "them", "text": "Vale" }, { "from": "them", "text": "Queda brutal" }, { "from": "them", "text": "Hey — mira mi setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "Los fondos quedan genial" }, { "from": "me", "text": "Tu setup es una pasada — sobre todo con los wallpapers 🔥" }],
+        "it": [{ "from": "them", "text": "Ok" }, { "from": "them", "text": "Bellissimo" }, { "from": "them", "text": "Ehi — guarda il mio setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "I wallpaper sono fantastici" }, { "from": "me", "text": "Setup pazzesco — soprattutto con i wallpaper 🔥" }],
+        "nl": [{ "from": "them", "text": "Helder" }, { "from": "them", "text": "Ziet er gaaf uit" }, { "from": "them", "text": "Hey — kijk mijn setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "De wallpapers zijn echt nice" }, { "from": "me", "text": "Je setup is echt sick — vooral met die wallpapers 🔥" }],
+        "pl": [{ "from": "them", "text": "Jasne" }, { "from": "them", "text": "Wygląda mega" }, { "from": "them", "text": "Hej — zobacz mój setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "Tapety są naprawdę piękne" }, { "from": "me", "text": "Setup jest zajebisty — zwłaszcza z tapetami 🔥" }],
+        "pt": [{ "from": "them", "text": "Fechou" }, { "from": "them", "text": "Ficou lindo" }, { "from": "them", "text": "Olha meu setup" }, { "from": "them", "photo": "setup-triple" }, { "from": "them", "text": "Os wallpapers ficaram muito bons" }, { "from": "me", "text": "Seu setup ficou insano — principalmente com os wallpapers 🔥" }]
+      }
+    },
+    {
+      "id": 2,
+      "stats": "29 · 3",
+      "messages": {
+        "de": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Melde mich gleich" }, { "from": "them", "text": "Alles klar" }, { "from": "me", "text": "Sieht mega aus" }, { "from": "me", "text": "Haha" }],
+        "en": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "I'll get back to you" }, { "from": "them", "text": "Sounds good" }, { "from": "me", "text": "Looks awesome" }, { "from": "me", "text": "Haha" }],
+        "fr": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Je te réponds tout de suite" }, { "from": "them", "text": "D'accord" }, { "from": "me", "text": "C'est magnifique" }, { "from": "me", "text": "Haha" }],
+        "es": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Te respondo enseguida" }, { "from": "them", "text": "Vale" }, { "from": "me", "text": "Queda increíble" }, { "from": "me", "text": "Jaja" }],
+        "it": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Ti rispondo subito" }, { "from": "them", "text": "Ok" }, { "from": "me", "text": "Venuto benissimo" }, { "from": "me", "text": "Haha" }],
+        "nl": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Ik antwoord zo" }, { "from": "them", "text": "Helder" }, { "from": "me", "text": "Ziet er mega uit" }, { "from": "me", "text": "Haha" }],
+        "pl": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "Odezwę się zaraz" }, { "from": "them", "text": "Jasne" }, { "from": "me", "text": "Wygląda mega" }, { "from": "me", "text": "Haha" }],
+        "pt": [{ "from": "them", "photo": "polo-dual" }, { "from": "me", "text": "E te chamo" }, { "from": "them", "text": "Fechou" }, { "from": "me", "text": "Lindão viu" }, { "from": "me", "text": "Kk" }]
+      }
+    },
+    {
+      "id": 3,
+      "stats": "29 · 3",
+      "messages": {
+        "de": [{ "from": "me", "text": "Hey" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Krasser Content — hab's direkt auf Laptop und PC gemacht" }, { "from": "me", "text": "Sieht richtig geil aus, mega schön" }, { "from": "them", "text": "Danke für den Zugang, alles ohne Fehler angekommen" }],
+        "en": [{ "from": "me", "text": "Hey" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Sick content — put it on my laptop and PC right away" }, { "from": "me", "text": "Looks really good, so beautiful" }, { "from": "them", "text": "Thanks for the access, everything arrived perfectly" }],
+        "fr": [{ "from": "me", "text": "Hey" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Contenu de ouf — installé direct sur laptop et PC" }, { "from": "me", "text": "C'est super beau, j'adore" }, { "from": "them", "text": "Merci pour l'accès, tout est arrivé sans problème" }],
+        "es": [{ "from": "me", "text": "Hey" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Contenido brutal — lo puse en el portátil y el PC al momento" }, { "from": "me", "text": "Queda genial, muy bonito" }, { "from": "them", "text": "Gracias por el acceso, todo llegó perfecto" }],
+        "it": [{ "from": "me", "text": "Ehi" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Contenuto pazzesco — subito su laptop e PC" }, { "from": "me", "text": "Venuto benissimo, bellissimo" }, { "from": "them", "text": "Grazie per l'accesso, tutto arrivato perfetto" }],
+        "nl": [{ "from": "me", "text": "Hey" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Gaaf content — meteen op laptop en PC gezet" }, { "from": "me", "text": "Ziet er echt goed uit, prachtig" }, { "from": "them", "text": "Bedankt voor de toegang, alles perfect aangekomen" }],
+        "pl": [{ "from": "me", "text": "Hej" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Zajebista paczka — od razu na laptop i PC" }, { "from": "me", "text": "Wygląda super, pięknie" }, { "from": "them", "text": "Dzięki za dostęp, wszystko dotarło bez problemu" }],
+        "pt": [{ "from": "me", "text": "E aí" }, { "from": "them", "photo": "polo-dual" }, { "from": "them", "text": "Conteúdo foda — já coloquei no note e no PC" }, { "from": "me", "text": "Ficou lindo demais" }, { "from": "them", "text": "Valeu pelo acesso, chegou tudo certinho" }]
+      }
+    },
+    {
+      "id": 4,
+      "stats": "663 · 5",
+      "messages": {
+        "de": [{ "from": "them", "text": "Hey" }, { "from": "me", "text": "Hey" }, { "from": "them", "text": "Der gefällt mir haha — wundervoll" }, { "from": "me", "text": "Sieht echt gut aus haha" }],
+        "en": [{ "from": "them", "text": "Hey" }, { "from": "me", "text": "Hey" }, { "from": "them", "text": "Love this one haha — wonderful" }, { "from": "me", "text": "Looks really good haha" }],
+        "fr": [{ "from": "them", "text": "Hey" }, { "from": "me", "text": "Hey" }, { "from": "them", "text": "J'adore celui-ci haha — magnifique" }, { "from": "me", "text": "Il est super beau haha" }],
+        "es": [{ "from": "them", "text": "Hey" }, { "from": "me", "text": "Hey" }, { "from": "them", "text": "Me encanta este jaja — precioso" }, { "from": "me", "text": "Queda genial jaja" }],
+        "it": [{ "from": "them", "text": "Ehi" }, { "from": "me", "text": "Ehi" }, { "from": "them", "text": "Questo mi piace haha — meraviglioso" }, { "from": "me", "text": "Venuto benissimo haha" }],
+        "nl": [{ "from": "them", "text": "Hey" }, { "from": "me", "text": "Hey" }, { "from": "them", "text": "Deze is top haha — prachtig" }, { "from": "me", "text": "Ziet er echt goed uit haha" }],
+        "pl": [{ "from": "them", "text": "Hej" }, { "from": "me", "text": "Hej" }, { "from": "them", "text": "Ten mi się podoba haha — cudowny" }, { "from": "me", "text": "Wygląda naprawdę dobrze haha" }],
+        "pt": [{ "from": "them", "text": "E aí" }, { "from": "me", "text": "E aí" }, { "from": "them", "text": "Curti esse haha — maravilhoso" }, { "from": "me", "text": "Ficou muito bom haha" }]
+      }
+    },
+    {
+      "id": 5,
+      "stats": "524 · 4",
+      "messages": {
+        "de": [{ "from": "them", "text": "Hey, hab den Zugang — wirklich sehr interessant" }, { "from": "me", "text": "Boah, danke fürs Feedback" }, { "from": "them", "text": "Schau mal, wie's geworden ist" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Pack ich mir auch drauf haha" }],
+        "en": [{ "from": "them", "text": "Hey, got access — really interesting" }, { "from": "me", "text": "Wow, thanks for the feedback" }, { "from": "them", "text": "Look how it turned out" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "I'm putting that on mine too haha" }],
+        "fr": [{ "from": "them", "text": "Hey, j'ai l'accès — vraiment top" }, { "from": "me", "text": "Merci pour le retour" }, { "from": "them", "text": "Regarde le résultat" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Je le mets aussi haha" }],
+        "es": [{ "from": "them", "text": "Hey, ya tengo acceso — muy interesante" }, { "from": "me", "text": "Gracias por el feedback" }, { "from": "them", "text": "Mira cómo quedó" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Yo también lo pongo jaja" }],
+        "it": [{ "from": "them", "text": "Ehi, ho l'accesso — davvero interessante" }, { "from": "me", "text": "Grazie per il feedback" }, { "from": "them", "text": "Guarda com'è venuto" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Lo metto anche io haha" }],
+        "nl": [{ "from": "them", "text": "Hey, toegang ontvangen — echt interessant" }, { "from": "me", "text": "Thanks voor de feedback" }, { "from": "them", "text": "Kijk hoe het geworden is" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Die zet ik er ook op haha" }],
+        "pl": [{ "from": "them", "text": "Hej, mam dostęp — naprawdę ciekawe" }, { "from": "me", "text": "Dzięki za feedback" }, { "from": "them", "text": "Zobacz jaki efekt" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Też sobie to ustawiam haha" }],
+        "pt": [{ "from": "them", "text": "E aí, peguei o acesso — muito interessante" }, { "from": "me", "text": "Valeu pelo feedback" }, { "from": "them", "text": "Olha como ficou" }, { "from": "them", "photo": "city-laptop" }, { "from": "me", "text": "Vou colocar também haha" }]
+      }
+    },
+    {
+      "id": 6,
+      "stats": "412 · 6",
+      "messages": {
+        "de": [{ "from": "them", "text": "Hey, schick dir mal wie's bei mir aussieht" }, { "from": "me", "text": "Schick mal haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "Was meinst du?" }, { "from": "me", "text": "Der ist der schönste haha — mega" }, { "from": "them", "text": "Absolut" }],
+        "en": [{ "from": "them", "text": "Hey, sending you how it looks on my screen" }, { "from": "me", "text": "Send it haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "What do you think?" }, { "from": "me", "text": "That's the best one haha — love it" }, { "from": "them", "text": "Absolutely" }],
+        "fr": [{ "from": "them", "text": "Hey, je t'envoie le rendu chez moi" }, { "from": "me", "text": "Envoie haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "Tu en penses quoi ?" }, { "from": "me", "text": "C'est le plus beau haha — j'adore" }, { "from": "them", "text": "Absolument" }],
+        "es": [{ "from": "them", "text": "Hey, te mando cómo se ve en mi pantalla" }, { "from": "me", "text": "Mándalo jaja" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "¿Qué te parece?" }, { "from": "me", "text": "Es el más bonito jaja — me encanta" }, { "from": "them", "text": "Totalmente" }],
+        "it": [{ "from": "them", "text": "Ehi, ti mando come viene sul mio schermo" }, { "from": "me", "text": "Mandalo haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "Che ne pensi?" }, { "from": "me", "text": "È il più bello haha — top" }, { "from": "them", "text": "Assolutamente" }],
+        "nl": [{ "from": "them", "text": "Hey, stuur je hoe het eruitziet" }, { "from": "me", "text": "Stuur maar haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "Wat vind je?" }, { "from": "me", "text": "Die is het mooist haha — love it" }, { "from": "them", "text": "Absoluut" }],
+        "pl": [{ "from": "them", "text": "Hej, wysyłam jak to u mnie wygląda" }, { "from": "me", "text": "Podeślij haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "Co myślisz?" }, { "from": "me", "text": "Ten jest najpiękniejszy haha — mega" }, { "from": "them", "text": "Absolutnie" }],
+        "pt": [{ "from": "them", "text": "E aí, te mando como ficou aqui" }, { "from": "me", "text": "Manda haha" }, { "from": "them", "photo": "tutto-laptop" }, { "from": "them", "text": "O que achou?" }, { "from": "me", "text": "Esse ficou o mais bonito haha — top" }, { "from": "them", "text": "Com certeza" }]
+      }
+    }
+  ],
+  "photos": {
+    "setup-triple": "../public/assets/social/photos/setup-triple.webp",
+    "polo-dual": "../public/assets/social/photos/polo-dual.webp",
+    "city-laptop": "../public/assets/social/photos/city-laptop.webp",
+    "tutto-laptop": "../public/assets/social/photos/tutto-laptop.webp"
+  }
+}
