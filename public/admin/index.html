@@ -52,6 +52,12 @@
           <div class="stat"><span class="stat-label">Visitas hoje</span><strong id="stat-today-views">—</strong></div>
         </div>
         <div class="panel-grid">
+          <div class="panel panel-wide">
+            <h3>Funil de conversão (30 dias)</h3>
+            <div id="funnel-chart" class="funnel"></div>
+          </div>
+        </div>
+        <div class="panel-grid">
           <div class="panel">
             <h3>Status dos pedidos</h3>
             <ul id="status-list" class="list"></ul>
@@ -64,6 +70,10 @@
       </section>
 
       <section id="view-live" class="view hidden">
+        <div class="panel">
+          <h3>Funil (7 dias)</h3>
+          <div id="live-funnel" class="funnel funnel-compact"></div>
+        </div>
         <div class="panel">
           <div class="panel-head">
             <h3>Feed em tempo real</h3>

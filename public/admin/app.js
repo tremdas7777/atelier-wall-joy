@@ -20,6 +20,15 @@
     premium: "Premium",
   };
 
+  const funnelLabels = {
+    landing_view: "Visitou a landing",
+    add_to_cart: "Adicionou ao carrinho",
+    checkout_view: "Abriu checkout",
+    checkout_created: "Iniciou pagamento",
+    purchase_completed: "Comprou",
+    purchase: "Comprou",
+  };
+
   const $ = (sel) => document.querySelector(sel);
   const loginScreen = $("#login-screen");
   const app = $("#app");
@@ -99,6 +108,31 @@
 
   function planLabel(plan) {
     return planLabels[plan] || plan;
+  }
+
+  function funnelLabel(step) {
+    return funnelLabels[step] || step;
+  }
+
+  function renderFunnel(el, funnel) {
+    if (!el || !funnel?.steps?.length) {
+      if (el) el.innerHTML = "<p class='muted'>Sem dados de funil ainda</p>";
+      return;
+    }
+    const max = Math.max(...funnel.steps.map((s) => s.count), 1);
+    el.innerHTML = funnel.steps
+      .map((s) => {
+        const width = Math.max(Math.round((s.count / max) * 100), s.count ? 4 : 0);
+        const prevRate = s.rateFromPrev != null ? s.rateFromPrev + "%" : "—";
+        const landingRate = s.rateFromLanding != null ? s.rateFromLanding + "%" : "—";
+        return `<div class="funnel-row">
+          <span class="label">${s.label}</span>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${width}%"></div></div>
+          <span class="count">${s.count}</span>
+          <span class="rate" title="Conversão da etapa anterior">${prevRate} · ${landingRate}</span>
+        </div>`;
+      })
+      .join("");
   }
 
   async function tryAuth() {
@@ -186,14 +220,23 @@
       `<li><span>ZIP Essencial</span><strong>${d.products.essentiell ? "Sim" : "Não"}</strong></li>`,
       `<li><span>ZIP Premium</span><strong>${d.products.premium ? "Sim" : "Não"}</strong></li>`,
     ].join("");
+
+    renderFunnel($("#funnel-chart"), d.funnel);
   }
 
   async function loadLive() {
     const d = await api("/live");
+    renderFunnel($("#live-funnel"), d.funnel);
     $("#live-feed").innerHTML = d.feed
       .map((item) => {
         if (item.type === "order") {
           return `<li><strong>${statusLabel(item.status)}</strong> · ${item.email} · ${planLabel(item.plan)} · ${eur(item.amount_cents)}<div class="time">${fmtDate(item.created_at)}</div></li>`;
+        }
+        if (item.type === "funnel") {
+          const plan = item.plan ? " · " + planLabel(item.plan) : "";
+          const email = item.email ? " · " + item.email : "";
+          const path = item.path ? `<code>${item.path}</code>` : "";
+          return `<li><strong>${funnelLabel(item.step)}</strong>${plan}${email}${path ? " · " + path : ""}<div class="time">${fmtDate(item.created_at)}</div></li>`;
         }
         return `<li>Visita em <code>${item.ref}</code><div class="time">${fmtDate(item.created_at)}</div></li>`;
       })

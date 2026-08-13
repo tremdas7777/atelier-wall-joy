@@ -388,18 +388,78 @@ export async function getAnalytics(days = 30) {
   return { revenueCents, ordersByDay, viewsByDay, planBreakdown };
 }
 
+const FUNNEL_EVENT_TYPES = [
+  "landing_view",
+  "add_to_cart",
+  "checkout_view",
+  "checkout_created",
+  "purchase_completed",
+] as const;
+
+export type FunnelStepKey = (typeof FUNNEL_EVENT_TYPES)[number] | "purchase";
+
+export async function getFunnelStats(days = 30) {
+  const since = new Date(Date.now() - days * 86400000).toISOString();
+  const trackedSteps = FUNNEL_EVENT_TYPES.filter((step) => step !== "purchase_completed");
+
+  const { data: events } = await admin()
+    .from("checkout_events")
+    .select("event_type")
+    .gte("created_at", since)
+    .in("event_type", trackedSteps);
+
+  const counts: Record<string, number> = {};
+  for (const step of trackedSteps) counts[step] = 0;
+  for (const row of events ?? []) {
+    counts[row.event_type] = (counts[row.event_type] ?? 0) + 1;
+  }
+
+  const { count: purchases } = await admin()
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "paid")
+    .gte("paid_at", since);
+
+  const steps: Array<{ key: FunnelStepKey; label: string; count: number }> = [
+    { key: "landing_view", label: "Landing", count: counts.landing_view ?? 0 },
+    { key: "add_to_cart", label: "Carrinho", count: counts.add_to_cart ?? 0 },
+    { key: "checkout_view", label: "Checkout", count: counts.checkout_view ?? 0 },
+    { key: "checkout_created", label: "Pagamento", count: counts.checkout_created ?? 0 },
+    { key: "purchase", label: "Compra", count: purchases ?? 0 },
+  ];
+
+  const landing = steps[0]?.count || 0;
+  return {
+    periodDays: days,
+    steps: steps.map((step, index) => {
+      const prev = index > 0 ? steps[index - 1]!.count : 0;
+      return {
+        ...step,
+        rateFromLanding: landing ? Math.round((step.count / landing) * 1000) / 10 : 0,
+        rateFromPrev: prev ? Math.round((step.count / prev) * 1000) / 10 : index === 0 ? 100 : 0,
+      };
+    }),
+  };
+}
+
 export async function getLiveFeed(limit = 40) {
-  const half = Math.floor(limit / 2);
+  const chunk = Math.max(Math.floor(limit / 3), 8);
   const { data: orders } = await admin()
     .from("orders")
     .select("order_uid,email,plan,status,amount_cents,created_at")
     .order("created_at", { ascending: false })
-    .limit(half);
+    .limit(chunk);
+  const { data: funnelEvents } = await admin()
+    .from("checkout_events")
+    .select("event_type,plan,email,metadata,created_at")
+    .in("event_type", [...FUNNEL_EVENT_TYPES])
+    .order("created_at", { ascending: false })
+    .limit(chunk * 2);
   const { data: views } = await admin()
     .from("page_views")
     .select("path,referrer,created_at")
     .order("created_at", { ascending: false })
-    .limit(half);
+    .limit(chunk);
 
   const feed = [
     ...(orders ?? []).map((o) => ({
@@ -410,6 +470,14 @@ export async function getLiveFeed(limit = 40) {
       status: o.status,
       amount_cents: o.amount_cents,
       created_at: o.created_at,
+    })),
+    ...(funnelEvents ?? []).map((e) => ({
+      type: "funnel" as const,
+      step: e.event_type,
+      email: e.email,
+      plan: e.plan,
+      path: (e.metadata as { path?: string } | null)?.path ?? null,
+      created_at: e.created_at,
     })),
     ...(views ?? []).map((v) => ({
       type: "view" as const,
@@ -521,6 +589,12 @@ export async function fulfillPaidOrder(
       paid_at: order.paid_at,
     },
     status: "paid",
+  });
+
+  await trackCheckoutEvent("purchase_completed", order.plan, order.email, {
+    order_uid: order.order_uid,
+    amount_cents: order.amount_cents,
+    currency: order.currency,
   });
 
   await trackCheckoutEvent("download_ready", order.plan, order.email, {
