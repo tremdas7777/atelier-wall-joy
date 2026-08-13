@@ -691,7 +691,17 @@ export async function createCheckoutSession(args: {
   const cfg = await planConfig(args.plan);
   const currency = (args.currency || "eur").toLowerCase();
   const amountCents = args.amountCents ?? cfg.amountCents;
-  const stripeLocale = args.locale || "auto";
+  const STRIPE_ALLOWED_LOCALES = new Set([
+    "auto","bg","cs","da","de","el","en","en-GB","es","es-419","et","fi","fil","fr","fr-CA",
+    "hr","hu","id","it","ja","ko","lt","lv","ms","mt","nb","nl","pl","pt","pt-BR","ro","ru",
+    "sk","sl","sv","th","tr","vi","zh","zh-HK","zh-TW",
+  ]);
+  const requestedLocale = (args.locale || "auto").trim();
+  const stripeLocale = STRIPE_ALLOWED_LOCALES.has(requestedLocale)
+    ? requestedLocale
+    : STRIPE_ALLOWED_LOCALES.has(requestedLocale.split("-")[0] || "")
+      ? requestedLocale.split("-")[0]!
+      : "auto";
 
   const body = new URLSearchParams();
   body.set("mode", "payment");

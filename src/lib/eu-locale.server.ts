@@ -145,7 +145,7 @@ export function detectCountryFromRequest(request: Request): string | null {
 export function countryFromAcceptLanguage(header: string | null | undefined): string | null {
   if (!header) return null;
   for (const part of header.split(",")) {
-    const tag = part.trim().split(";")[0];
+    const tag = part.trim().split(";")[0] ?? "";
     const region = tag.split("-")[1]?.toUpperCase();
     if (region && region.length === 2 && EU_COUNTRY_LANGUAGES[region]) return region;
   }
@@ -165,8 +165,11 @@ export function resolveLanguageForCountry(
       const aliased = LANG_ALIASES[pref];
       if (aliased && candidates.includes(aliased)) return aliased;
     }
-    const primary = candidates[0];
-    return normalizeLangCode(primary) || DEFAULT_LANG;
+    for (const candidate of candidates) {
+      const normalized = normalizeLangCode(candidate);
+      if (normalized) return normalized;
+    }
+    return FALLBACK_LANG;
   }
 
   for (const pref of prefs) {
