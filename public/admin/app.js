@@ -290,20 +290,57 @@
       btn.textContent = "Enviando…";
       msg.textContent = "";
 
-      const fd = new FormData();
-      fd.append("plan", plan);
-      fd.append("file", file);
-
       try {
-        const res = await fetch("/api/admin/upload-product", {
+        // 1. Get a short-lived signed upload token from the server
+        const startRes = await fetch("/api/admin/upload-resumable", {
           method: "POST",
           credentials: "same-origin",
-          headers: authHeaders(),
-          body: fd,
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify({ plan }),
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || "Falha no upload.");
-        msg.textContent = "Upload concluído: " + (data.product?.filename || plan);
+        const startData = await startRes.json().catch(() => ({}));
+        if (!startRes.ok) throw new Error(startData.error || "Falha ao iniciar upload.");
+
+        // 2. Upload directly from browser → Supabase Storage via TUS (resumable, 6 MB chunks)
+        await new Promise((resolve, reject) => {
+          const upload = new tus.Upload(file, {
+            endpoint: startData.endpoint,
+            retryDelays: [0, 3000, 5000, 10000, 20000],
+            headers: {
+              "x-signature": startData.token,
+              "x-upsert": "true",
+            },
+            metadata: {
+              bucketName: startData.bucketName,
+              objectName: startData.objectName,
+              contentType: startData.contentType || "application/zip",
+              cacheControl: "3600",
+            },
+            chunkSize: 6 * 1024 * 1024,
+            uploadDataDuringCreation: true,
+            removeFingerprintOnSuccess: true,
+            onProgress: function (bytesUploaded, bytesTotal) {
+              var pct = ((bytesUploaded / bytesTotal) * 100).toFixed(1);
+              btn.textContent = "Enviando… " + pct + "%";
+              msg.textContent =
+                formatFileSize(bytesUploaded) + " / " + formatFileSize(bytesTotal);
+            },
+            onError: function (error) {
+              reject(new Error(error?.message || "Falha no upload resumável."));
+            },
+            onSuccess: function () {
+              resolve();
+            },
+          });
+
+          // Check for previous uploads to resume from
+          upload.findPreviousUploads().then(function (prev) {
+            if (prev.length) upload.resumeFromPreviousUpload(prev[0]);
+            upload.start();
+          });
+        });
+
+        msg.textContent = "Upload concluído: " + file.name;
         input.value = "";
         pendingUploads[plan] = null;
         btn.textContent = "Enviar " + (plan === "premium" ? "Premium" : "Essencial");
@@ -313,13 +350,15 @@
       } catch (e) {
         msg.textContent = e.message;
         btn.disabled = false;
+        btn.textContent = "Enviar " + (plan === "premium" ? "Premium" : "Essencial");
       }
     });
   }
 
   function formatFileSize(bytes) {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
   }
 
   bindUpload("essentiell");

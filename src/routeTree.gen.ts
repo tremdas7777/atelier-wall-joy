@@ -23,6 +23,7 @@ import { Route as ApiAdminOrdersRouteImport } from './routes/api/admin/orders'
 import { Route as ApiAdminProductsRouteImport } from './routes/api/admin/products'
 import { Route as ApiAdminSettingsRouteImport } from './routes/api/admin/settings'
 import { Route as ApiAdminUploadProductRouteImport } from './routes/api/admin/upload-product'
+import { Route as ApiAdminUploadResumableRouteImport } from './routes/api/admin/upload-resumable'
 import { Route as ApiDownloadTokenRouteImport } from './routes/api/download/$token'
 import { Route as ApiLocaleDetectRouteImport } from './routes/api/locale/detect'
 import { Route as ApiMarketingConfigRouteImport } from './routes/api/marketing/config'
@@ -99,6 +100,11 @@ const ApiAdminUploadProductRoute = ApiAdminUploadProductRouteImport.update({
   path: '/api/admin/upload-product',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminUploadResumableRoute = ApiAdminUploadResumableRouteImport.update({
+  id: '/api/admin/upload-resumable',
+  path: '/api/admin/upload-resumable',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDownloadTokenRoute = ApiDownloadTokenRouteImport.update({
   id: '/api/download/$token',
   path: '/api/download/$token',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/admin/upload-resumable': typeof ApiAdminUploadResumableRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
   '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/marketing/config': typeof ApiMarketingConfigRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/admin/upload-resumable': typeof ApiAdminUploadResumableRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
   '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/marketing/config': typeof ApiMarketingConfigRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/api/admin/products': typeof ApiAdminProductsRoute
   '/api/admin/settings': typeof ApiAdminSettingsRoute
   '/api/admin/upload-product': typeof ApiAdminUploadProductRoute
+  '/api/admin/upload-resumable': typeof ApiAdminUploadResumableRoute
   '/api/download/$token': typeof ApiDownloadTokenRoute
   '/api/locale/detect': typeof ApiLocaleDetectRoute
   '/api/marketing/config': typeof ApiMarketingConfigRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/api/admin/products'
     | '/api/admin/settings'
     | '/api/admin/upload-product'
+    | '/api/admin/upload-resumable'
     | '/api/download/$token'
     | '/api/locale/detect'
     | '/api/marketing/config'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/api/admin/products'
     | '/api/admin/settings'
     | '/api/admin/upload-product'
+    | '/api/admin/upload-resumable'
     | '/api/download/$token'
     | '/api/locale/detect'
     | '/api/marketing/config'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/api/admin/products'
     | '/api/admin/settings'
     | '/api/admin/upload-product'
+    | '/api/admin/upload-resumable'
     | '/api/download/$token'
     | '/api/locale/detect'
     | '/api/marketing/config'
@@ -270,6 +282,7 @@ export interface RootRouteChildren {
   ApiAdminProductsRoute: typeof ApiAdminProductsRoute
   ApiAdminSettingsRoute: typeof ApiAdminSettingsRoute
   ApiAdminUploadProductRoute: typeof ApiAdminUploadProductRoute
+  ApiAdminUploadResumableRoute: typeof ApiAdminUploadResumableRoute
   ApiDownloadTokenRoute: typeof ApiDownloadTokenRoute
   ApiLocaleDetectRoute: typeof ApiLocaleDetectRoute
   ApiMarketingConfigRoute: typeof ApiMarketingConfigRoute
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminUploadProductRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/upload-resumable': {
+      id: '/api/admin/upload-resumable'
+      path: '/api/admin/upload-resumable'
+      fullPath: '/api/admin/upload-resumable'
+      preLoaderRoute: typeof ApiAdminUploadResumableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/download/$token': {
       id: '/api/download/$token'
       path: '/api/download/$token'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminProductsRoute: ApiAdminProductsRoute,
   ApiAdminSettingsRoute: ApiAdminSettingsRoute,
   ApiAdminUploadProductRoute: ApiAdminUploadProductRoute,
+  ApiAdminUploadResumableRoute: ApiAdminUploadResumableRoute,
   ApiDownloadTokenRoute: ApiDownloadTokenRoute,
   ApiLocaleDetectRoute: ApiLocaleDetectRoute,
   ApiMarketingConfigRoute: ApiMarketingConfigRoute,
