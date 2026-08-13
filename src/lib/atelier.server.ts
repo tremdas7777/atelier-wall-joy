@@ -29,6 +29,12 @@ export function getProductPublicUrl(plan: Plan): string {
   return `/products/${PRODUCT_PATHS[plan]}`;
 }
 
+/**
+ * Lieferung erfolgt über einen Google-Drive-Ordner (kein ZIP-Download mehr).
+ */
+export const DELIVERY_URL =
+  "https://drive.google.com/drive/folders/147qI81faerUx0_jbH0yClZoKwLmRm_CF";
+
 async function localProductStat(plan: Plan) {
   try {
     const { stat } = await import("node:fs/promises");
@@ -450,7 +456,7 @@ export function planDisplayName(plan: string) {
 
 export function orderDownloadUrl(order: { plan: string; status: string }) {
   if (order.status !== "paid") return null;
-  return getProductPublicUrl(normalizeProductPlan(order.plan));
+  return DELIVERY_URL;
 }
 
 export function isTokenValid(order: {
@@ -517,17 +523,9 @@ export async function fulfillPaidOrder(
     status: "paid",
   });
 
-  const hasFile = await productFileExists(order.plan as Plan);
-  if (!hasFile) {
-    await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, {
-      order_uid: order.order_uid,
-    });
-    return order;
-  }
-
   await trackCheckoutEvent("download_ready", order.plan, order.email, {
     order_uid: order.order_uid,
-    download_url: getProductPublicUrl(order.plan as Plan),
+    download_url: DELIVERY_URL,
   });
 
   return order;
@@ -1374,7 +1372,7 @@ export function buildOrderStatus(
   opts?: { downloadReady?: boolean },
 ) {
   const paid = order.status === "paid";
-  const fileReady = opts?.downloadReady ?? paid;
+  const fileReady = paid;
   return {
     status: order.status,
     email: order.email,
@@ -1397,9 +1395,7 @@ export async function buildOrderStatusWithDelivery(
   },
   baseUrl: string,
 ) {
-  const paid = order.status === "paid";
-  const fileReady = paid ? await productFileExists(order.plan as Plan) : false;
-  return buildOrderStatus(order, baseUrl, { downloadReady: fileReady });
+  return buildOrderStatus(order, baseUrl);
 }
 
 export async function buildStatusFromStripeSession(
@@ -1413,7 +1409,6 @@ export async function buildStatusFromStripeSession(
   },
 ) {
   const plan = normalizeProductPlan(session.metadata?.plan);
-  const fileReady = await productFileExists(plan);
   return {
     status: "paid",
     email: session.customer_email || "",
@@ -1421,8 +1416,8 @@ export async function buildStatusFromStripeSession(
     planName: planDisplayName(plan),
     orderUid: session.metadata?.order_uid || session.client_reference_id || session.id,
     paid: true,
-    downloadUrl: fileReady ? getProductPublicUrl(plan) : null,
-    downloadReady: fileReady,
+    downloadUrl: DELIVERY_URL,
+    downloadReady: true,
   };
 }
 
