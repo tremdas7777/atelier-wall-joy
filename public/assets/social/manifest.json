@@ -8,7 +8,8 @@
     "es": ["es/1.webp", "es/2.webp", "es/3.webp", "es/4.webp", "es/5.webp", "es/6.webp"],
     "it": ["it/1.webp", "it/2.webp", "it/3.webp", "it/4.webp", "it/5.webp", "it/6.webp"],
     "nl": ["nl/1.webp", "nl/2.webp", "nl/3.webp", "nl/4.webp", "nl/5.webp", "nl/6.webp"],
-    "pl": ["pl/1.webp", "pl/2.webp", "pl/3.webp", "pl/4.webp", "pl/5.webp", "pl/6.webp"]
+    "pl": ["pl/1.webp", "pl/2.webp", "pl/3.webp", "pl/4.webp", "pl/5.webp", "pl/6.webp"],
+    "el": ["el/1.webp", "el/2.webp", "el/3.webp", "el/4.webp", "el/5.webp", "el/6.webp"]
   },
   "languageMap": {
     "de": "de",
@@ -21,7 +22,6 @@
     "ie": "en",
     "mt": "en",
     "fr": "fr",
-    "be": "fr",
     "mc": "fr",
     "es": "es",
     "it": "it",
@@ -29,6 +29,8 @@
     "va": "it",
     "nl": "nl",
     "pl": "pl",
+    "gr": "el",
+    "cy": "el",
     "cs": "en",
     "sk": "en",
     "sl": "en",
@@ -36,7 +38,6 @@
     "bg": "en",
     "ro": "en",
     "hu": "en",
-    "el": "en",
     "fi": "en",
     "sv": "en",
     "da": "en",

@@ -52,7 +52,7 @@
         </label>
 
         <button id="pay-btn" type="submit" class="mt-4 w-full rounded-full bg-gold px-6 py-4 text-sm font-bold uppercase tracking-wider text-background transition hover:scale-[1.01] disabled:opacity-50">
-          <span data-i18n="checkout.payBtn">Weiter zu Stripe — </span><span id="btn-price">9,90 €</span>
+          <span data-i18n="checkout.payBtn">Jetzt bezahlen — </span><span id="btn-price">9,90 €</span>
         </button>
         <p class="text-center text-xs text-muted-foreground" data-i18n="checkout.paySecure">100 % sichere Zahlung · Stripe · Karte, PayPal, Klarna · EUR</p>
         <p id="checkout-error" class="hidden text-center text-sm text-red-400"></p>
@@ -93,7 +93,7 @@
       }
 
       function payBtnHtml(price) {
-        return t("checkout.payBtn", "Weiter zu Stripe — ") + '<span id="btn-price">' + price + "</span>";
+        return t("checkout.payBtn", "Jetzt bezahlen — ") + '<span id="btn-price">' + price + "</span>";
       }
 
       function checkoutErrorMessage(json, res) {
@@ -117,7 +117,7 @@
         var planData = window.ATELIER_I18N.checkoutPlan(plan);
         errEl.classList.add("hidden");
         btn.disabled = true;
-        btn.textContent = t("checkout.payRedirect", "Weiterleitung zu Stripe…");
+        btn.textContent = t("checkout.payRedirect", "Zahlung wird vorbereitet…");
 
         var fd = new FormData(ev.target);
         try {

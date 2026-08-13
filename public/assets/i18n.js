@@ -51,6 +51,15 @@
     if (!socialManifest) return "de";
     var cc = (country || "").toLowerCase();
     var l = (lang || DEFAULT_LANG).toLowerCase();
+
+    // Belgium: follow visitor language (nl / fr / de), not a fixed country map
+    if (cc === "be") {
+      if (socialManifest.languages[l]) return l;
+      if (socialManifest.languages.nl) return "nl";
+      if (socialManifest.languages.fr) return "fr";
+      return "de";
+    }
+
     if (cc && socialManifest.languageMap[cc]) return socialManifest.languageMap[cc];
     if (socialManifest.languages[l]) return l;
     var fb = socialManifest.fallback || ["en", "de"];
@@ -424,7 +433,7 @@
     if (paySecure && t["checkout.paySecure"]) paySecure.textContent = interpolate(t["checkout.paySecure"]);
     if (payBtn && !payBtn.disabled) {
       payBtn.innerHTML =
-        (t["checkout.payBtn"] || "Weiter zu Stripe — ") +
+        (t["checkout.payBtn"] || "Jetzt bezahlen — ") +
         '<span id="btn-price">' +
         data.price +
         "</span>";
