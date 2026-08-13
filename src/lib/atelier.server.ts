@@ -66,6 +66,12 @@ const PLAN_DESCRIPTIONS: Record<Plan, string> = {
     "100 Wallpapers in 4K für Laptop und Smartphone. Sofortiger Download.",
 };
 
+/** Short labels shown on Stripe Checkout (keep UI names in locale bundles). */
+const STRIPE_PRODUCT_NAMES: Record<Plan, string> = {
+  essentiell: "Essential",
+  premium: "Premium",
+};
+
 /* ---------------- Supabase admin client (loosely typed, self-contained) ---------------- */
 
 export type Json =
@@ -1190,10 +1196,10 @@ export async function createCheckoutSession(args: {
   body.set("line_items[0][quantity]", "1");
   body.set("line_items[0][price_data][currency]", currency);
   body.set("line_items[0][price_data][unit_amount]", String(amountCents));
-  body.set("line_items[0][price_data][product_data][name]", args.productName || cfg.name);
+  body.set("line_items[0][price_data][product_data][name]", STRIPE_PRODUCT_NAMES[cfg.plan]);
   body.set(
     "line_items[0][price_data][product_data][description]",
-    args.productDescription || cfg.description,
+    "Atelier Wallpapers",
   );
   body.set("line_items[0][price_data][product_data][metadata][plan]", cfg.plan);
   body.set("metadata[plan]", cfg.plan);
