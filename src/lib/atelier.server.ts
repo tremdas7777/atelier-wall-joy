@@ -29,6 +29,12 @@ export function getProductPublicUrl(plan: Plan): string {
   return `/products/${PRODUCT_PATHS[plan]}`;
 }
 
+/**
+ * Lieferung erfolgt über einen Google-Drive-Ordner (kein ZIP-Download mehr).
+ */
+export const DELIVERY_URL =
+  "https://drive.google.com/drive/folders/147qI81faerUx0_jbH0yClZoKwLmRm_CF";
+
 async function localProductStat(plan: Plan) {
   try {
     const { stat } = await import("node:fs/promises");
