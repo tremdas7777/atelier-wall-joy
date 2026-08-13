@@ -738,7 +738,7 @@ export async function sendMetaPixelPurchase(args: {
   if (!cfg.enabled || !cfg.pixelId || !token) return;
 
   const userData: Record<string, string[]> = {};
-  if (args.email) userData.em = [hashMetaUserData(args.email)];
+  if (args.email) userData["em"] = [hashMetaUserData(args.email)];
 
   const payload = {
     data: [
@@ -899,16 +899,16 @@ export async function getOrderCheckoutContext(orderUid: string) {
     .limit(100);
 
   const row = (data ?? []).find(
-    (r) => (r.metadata as Record<string, unknown> | null)?.order_uid === orderUid,
+    (r) => (r.metadata as Record<string, unknown> | null)?.["order_uid"] === orderUid,
   );
   if (!row?.metadata) return empty;
 
   const meta = row.metadata as Record<string, unknown>;
   return {
-    tracking: normalizeUtmifyTracking(meta.tracking),
-    country: typeof meta.country === "string" ? meta.country.toUpperCase() : null,
-    customerIp: typeof meta.customer_ip === "string" ? meta.customer_ip : null,
-    productName: typeof meta.product_name === "string" ? meta.product_name : null,
+    tracking: normalizeUtmifyTracking(meta["tracking"]),
+    country: typeof meta["country"] === "string" ? (meta["country"] as string).toUpperCase() : null,
+    customerIp: typeof meta["customer_ip"] === "string" ? (meta["customer_ip"] as string) : null,
+    productName: typeof meta["product_name"] === "string" ? (meta["product_name"] as string) : null,
   };
 }
 
