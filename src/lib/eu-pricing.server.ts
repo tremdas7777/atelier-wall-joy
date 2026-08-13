@@ -245,8 +245,8 @@ export async function getMarketPricing(args: {
   language?: string | null;
 }): Promise<MarketPricing> {
   const settings = await getAllSettings();
-  const essentialEur = Number(settings.essential_price_cents || "990");
-  const premiumEur = Number(settings.premium_price_cents || "1990");
+  const essentialEur = Number(settings["essential_price_cents"] || "990");
+  const premiumEur = Number(settings["premium_price_cents"] || "1990");
   const country = args.country?.trim().toUpperCase() || null;
   const language = normalizeLangCode(args.language) || "de";
   const currency = resolveCheckoutCurrency(country);
