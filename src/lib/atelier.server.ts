@@ -110,6 +110,8 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   premium_price_cents: "1990",
   store_name: "Atelier Wallpapers",
   support_email: "kontakt@atelierwallpapers.de",
+  meta_pixel_id: "",
+  meta_pixel_enabled: "0",
 };
 
 const SETTINGS_FILE = ".data/settings.json";
@@ -646,6 +648,28 @@ export async function stripeWebhookSecret(): Promise<string> {
 
 export async function isStripeConfigured(): Promise<boolean> {
   return Boolean(await stripeSecret());
+}
+
+export function normalizeMetaPixelId(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const id = String(raw).trim().replace(/\D/g, "");
+  return id.length >= 10 && id.length <= 20 ? id : null;
+}
+
+export async function metaPixelConfig(): Promise<{ enabled: boolean; pixelId: string | null }> {
+  const enabled = (await getSetting("meta_pixel_enabled", "0")).trim() === "1";
+  const fromSetting = normalizeMetaPixelId(await getSetting("meta_pixel_id", ""));
+  const fromEnv = normalizeMetaPixelId(process.env["META_PIXEL_ID"]);
+  const pixelId = fromSetting || fromEnv;
+  return {
+    enabled: enabled && Boolean(pixelId),
+    pixelId: enabled && pixelId ? pixelId : null,
+  };
+}
+
+export async function isMetaPixelConfigured(): Promise<boolean> {
+  const cfg = await metaPixelConfig();
+  return cfg.enabled && Boolean(cfg.pixelId);
 }
 
 export async function createCheckoutSession(args: {

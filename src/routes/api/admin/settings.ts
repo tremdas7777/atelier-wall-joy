@@ -19,6 +19,8 @@ export const Route = createFileRoute("/api/admin/settings")({
               stripe_publishable_key: pubKey ? maskSecret(pubKey, 8) : "",
               stripe_secret_key: secretKey ? "••••••••" : "",
               stripe_webhook_secret: webhookSecret ? "••••••••" : "",
+              meta_pixel_id: s["meta_pixel_id"] || "",
+              meta_pixel_enabled: s["meta_pixel_enabled"] === "1" ? "1" : "0",
               essential_price_cents: s["essential_price_cents"],
               premium_price_cents: s["premium_price_cents"],
               store_name: s["store_name"],
@@ -47,6 +49,8 @@ export const Route = createFileRoute("/api/admin/settings")({
             "stripe_publishable_key",
             "stripe_secret_key",
             "stripe_webhook_secret",
+            "meta_pixel_id",
+            "meta_pixel_enabled",
             "essential_price_cents",
             "premium_price_cents",
             "store_name",
@@ -55,9 +59,23 @@ export const Route = createFileRoute("/api/admin/settings")({
           for (const key of allowed) {
             const value = body[key];
             if (value === undefined) continue;
-            const v = String(value).trim();
+            let v = String(value).trim();
             if (v.includes("••••") || v === "********") continue;
             if (key.startsWith("stripe_") && v === "") continue;
+            if (key === "meta_pixel_enabled") {
+              v = v === "1" || v === "true" || v === "on" ? "1" : "0";
+            }
+            if (key === "meta_pixel_id" && v) {
+              const { normalizeMetaPixelId } = await import("@/lib/atelier.server");
+              const normalized = normalizeMetaPixelId(v);
+              if (!normalized) {
+                return Response.json(
+                  { error: "ID do Meta Pixel inválido (use só números, ex: 123456789012345)." },
+                  { status: 400 },
+                );
+              }
+              v = normalized;
+            }
             await setSetting(key, v);
           }
           return Response.json({ ok: true });

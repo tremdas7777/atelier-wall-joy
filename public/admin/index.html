@@ -117,6 +117,14 @@
           <p class="hint">Webhook URL: <code id="webhook-url"></code> · Evento: <code>checkout.session.completed</code></p>
           <p class="hint">Sem checkout? Adicione <code>STRIPE_SECRET_KEY</code> nos segredos do Lovable (ou salve aqui com <code>SUPABASE_SERVICE_ROLE_KEY</code> ativo).</p>
 
+          <h3>Meta / Facebook Pixel</h3>
+          <p class="hint">Cole o ID numérico do pixel (Events Manager → Fontes de dados → Pixel). Ative para rastrear PageView, AddToCart, InitiateCheckout e Purchase.</p>
+          <label>Pixel ID<input name="meta_pixel_id" inputmode="numeric" placeholder="123456789012345" autocomplete="off"/></label>
+          <label class="checkbox-row">
+            <input type="checkbox" name="meta_pixel_enabled" value="1"/>
+            <span>Ativar Meta Pixel no site</span>
+          </label>
+
           <h3>Produtos (upload ZIP)</h3>
           <p class="hint">Envie um arquivo .zip por plano. Após pagamento confirmado, o cliente faz o download na página de obrigado.</p>
 

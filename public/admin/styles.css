@@ -309,6 +309,20 @@ th { color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: 
 .product-status.ok { color: var(--ok); }
 .product-status.missing { color: #e0a060; }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.checkbox-row input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--gold);
+}
+
 .chart {
   display: flex;
   align-items: flex-end;

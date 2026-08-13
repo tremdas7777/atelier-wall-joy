@@ -100,6 +100,7 @@
   </footer>
 
   <script src="assets/i18n.js"></script>
+  <script src="assets/pixel.js" defer></script>
   <script>
     (function () {
       var params = new URLSearchParams(location.search);
@@ -150,6 +151,23 @@
         document.getElementById("order-id").textContent = d.orderUid || "—";
         document.getElementById("order-email").textContent = d.email || "—";
         document.getElementById("success-subtitle").textContent = planHint(d.plan);
+
+        if (sessionId && window.ATELIER_PIXEL) {
+          var purchaseKey = "atelier-pixel-purchase-" + sessionId;
+          if (!sessionStorage.getItem(purchaseKey)) {
+            sessionStorage.setItem(purchaseKey, "1");
+            var pricing = window.ATELIER_PRICING;
+            var planKey = d.plan === "premium" ? "premium" : "essential";
+            var planPrice = pricing && pricing[planKey];
+            window.ATELIER_PIXEL.trackPurchase({
+              value: planPrice && planPrice.cents ? planPrice.cents / 100 : undefined,
+              currency: (planPrice && planPrice.currency) || (pricing && pricing.currency) || "EUR",
+              contentName: d.planName,
+              orderId: d.orderUid,
+              plan: d.plan,
+            });
+          }
+        }
 
         if (d.downloadUrl && d.downloadReady) {
           btn.href = d.downloadUrl;
