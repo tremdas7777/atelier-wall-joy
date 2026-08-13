@@ -5,18 +5,8 @@
 export const DEFAULT_LANG = "de";
 export const FALLBACK_LANG = "en";
 
-/** Active sales market (expand when launching in more countries) */
-export const ALLOWED_COUNTRIES = new Set(["DE"]);
-
-/** ISO 3166-1 alpha-2 codes excluded from the market */
-export const BLOCKED_COUNTRIES = new Set(["GB", "UK"]);
-
-export function isAllowedMarketCountry(country: string | null | undefined): boolean {
-  if (!country) return true;
-  const cc = country.trim().toUpperCase();
-  if (BLOCKED_COUNTRIES.has(cc)) return false;
-  return ALLOWED_COUNTRIES.has(cc);
-}
+/** Fixed sales market — offer always shown in German for Germany (no geo blocking) */
+export const FIXED_MARKET_COUNTRY = "DE";
 
 /**
  * Official / primary languages per target country (priority order).
@@ -197,30 +187,15 @@ export type LocaleDetectResult = {
 };
 
 export function detectVisitorLocale(
-  request: Request,
-  countryOverride?: string | null,
+  _request: Request,
+  _countryOverride?: string | null,
 ): LocaleDetectResult {
-  const accept = request.headers.get("accept-language");
-  let country =
-    countryOverride?.trim().toUpperCase() || detectCountryFromRequest(request);
-  let source: LocaleDetectResult["source"] = country
-    ? countryOverride
-      ? "geo"
-      : "geo"
-    : "default";
-
-  if (!country) {
-    country = countryFromAcceptLanguage(accept);
-    if (country) source = "accept-language";
-  }
-
-  const detectedCountry = country?.toUpperCase() || null;
-  if (detectedCountry && !isAllowedMarketCountry(detectedCountry)) {
-    return { country: detectedCountry, language: DEFAULT_LANG, blocked: true, source };
-  }
-
-  const language = resolveLanguageForCountry("DE", accept);
-  return { country: "DE", language, blocked: false, source };
+  return {
+    country: FIXED_MARKET_COUNTRY,
+    language: DEFAULT_LANG,
+    blocked: false,
+    source: "default",
+  };
 }
 
 export function localeHtmlLang(lang: string): string {

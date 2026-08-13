@@ -322,12 +322,11 @@
     var countryOverride = getQueryCountry();
     return fetchDetect(countryOverride, langOverride || null)
       .catch(function () {
-        var cc = (countryOverride || "").trim().toUpperCase();
         return {
-          country: cc || "DE",
+          country: "DE",
           language: langOverride || DEFAULT_LANG,
-          blocked: cc ? cc !== "DE" : false,
-          source: countryOverride ? "geo" : "default",
+          blocked: false,
+          source: "default",
           pricing: null,
         };
       })
@@ -651,18 +650,13 @@
   function boot() {
     if (isBlockedPage()) return;
 
-    var bootData = window.__ATELIER_BOOT__;
-    if (bootData && bootData.blocked) {
-      window.location.replace(BLOCKED_PATH);
-      return;
-    }
-
     ensureLangSwitcher();
 
     var langOverride = getLangOverride();
     var guessLang = langOverride || guessLangFromSignals();
     updateLangSwitcher(guessLang);
 
+    var bootData = window.__ATELIER_BOOT__;
     if (bootData && bootData.pricing) {
       currentPricing = bootData.pricing;
       window.ATELIER_PRICING = currentPricing;
@@ -685,10 +679,6 @@
 
     resolveLocaleFast(langOverride).then(function (det) {
       if (seq !== bootSeq) return;
-      if (det.blocked) {
-        window.location.replace(BLOCKED_PATH);
-        return;
-      }
 
       currentDetect = det;
       currentPricing = det.pricing;
