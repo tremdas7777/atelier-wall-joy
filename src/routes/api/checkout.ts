@@ -62,7 +62,10 @@ export const Route = createFileRoute("/api/checkout")({
 
         if (!(await isStripeConfigured())) {
           return Response.json(
-            { error: "Pagamento indisponível no momento." },
+            {
+              error: "Stripe ist nicht konfiguriert.",
+              code: "stripe_not_configured",
+            },
             { status: 503 },
           );
         }
@@ -83,34 +86,52 @@ export const Route = createFileRoute("/api/checkout")({
             productDescription: productDescription?.trim() || undefined,
           });
 
-          await createOrder({
-            order_uid: orderUid,
-            email: email.trim().toLowerCase(),
-            customer_name: (name || "").trim() || null,
-            plan: normalizedPlan,
-            amount_cents: selected.cents,
-            currency: pricing.currency.toLowerCase(),
-            status: "pending",
-            stripe_session_id: session.id,
-            download_token: newDownloadToken(),
-            download_expires_at: downloadExpiryDate(),
-          });
+          try {
+            await createOrder({
+              order_uid: orderUid,
+              email: email.trim().toLowerCase(),
+              customer_name: (name || "").trim() || null,
+              plan: normalizedPlan,
+              amount_cents: selected.cents,
+              currency: pricing.currency.toLowerCase(),
+              status: "pending",
+              stripe_session_id: session.id,
+              download_token: newDownloadToken(),
+              download_expires_at: downloadExpiryDate(),
+            });
 
-          await trackCheckoutEvent("checkout_created", normalizedPlan, email, {
-            order_uid: orderUid,
-            session_id: session.id,
-            country: marketCountry,
-            currency: pricing.currency,
-          });
+            await trackCheckoutEvent("checkout_created", normalizedPlan, email, {
+              order_uid: orderUid,
+              session_id: session.id,
+              country: marketCountry,
+              currency: pricing.currency,
+            });
+          } catch (persistErr) {
+            console.error("checkout persist warning:", persistErr);
+          }
+
+          if (!session.url) {
+            return Response.json(
+              { error: "Stripe URL fehlt.", code: "stripe_no_url" },
+              { status: 502 },
+            );
+          }
 
           return Response.json({ url: session.url, sessionId: session.id });
         } catch (err) {
           console.error("checkout error:", err);
           return Response.json(
-            { error: err instanceof Error ? err.message : "Não foi possível iniciar o pagamento." },
+            {
+              error: err instanceof Error ? err.message : "Checkout fehlgeschlagen.",
+              code: "stripe_error",
+            },
             { status: 500 },
           );
         }
+      },
+      GET: async () => {
+        const { isStripeConfigured } = await import("@/lib/atelier.server");
+        return Response.json({ ready: await isStripeConfigured() });
       },
     },
   },

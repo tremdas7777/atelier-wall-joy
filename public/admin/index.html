@@ -115,6 +115,7 @@
           <label>Secret Key<input name="stripe_secret_key" type="password" placeholder="sk_live_…" autocomplete="off"/></label>
           <label>Webhook Secret<input name="stripe_webhook_secret" type="password" placeholder="whsec_…" autocomplete="off"/></label>
           <p class="hint">Webhook URL: <code id="webhook-url"></code> · Evento: <code>checkout.session.completed</code></p>
+          <p class="hint">Sem checkout? Adicione <code>STRIPE_SECRET_KEY</code> nos segredos do Lovable (ou salve aqui com <code>SUPABASE_SERVICE_ROLE_KEY</code> ativo).</p>
 
           <h3>Produtos (upload ZIP)</h3>
           <p class="hint">Envie um arquivo .zip por plano. Após pagamento confirmado, o cliente faz o download na página de obrigado.</p>

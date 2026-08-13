@@ -82,24 +82,47 @@
         document.getElementById("cancel-notice").classList.remove("hidden");
       }
 
+      function i18nReady() {
+        return window.ATELIER_I18N && typeof window.ATELIER_I18N.t === "function";
+      }
+
+      function t(key, fallback) {
+        return i18nReady() ? window.ATELIER_I18N.t(key) : fallback || key;
+      }
+
       function payBtnHtml(price) {
-        return window.ATELIER_I18N.t("checkout.payBtn") + '<span id="btn-price">' + price + "</span>";
+        return t("checkout.payBtn", "Weiter zu Stripe — ") + '<span id="btn-price">' + price + "</span>";
+      }
+
+      function checkoutErrorMessage(json, res) {
+        if (json && json.code === "stripe_not_configured") {
+          return t("checkout.stripeNotConfigured", json.error);
+        }
+        if (json && json.code === "stripe_no_url") {
+          return t("checkout.noStripeUrl", json.error);
+        }
+        if (json && json.error) return json.error;
+        if (!res || !res.ok) return t("checkout.checkoutFailed", "Checkout fehlgeschlagen");
+        return t("checkout.apiUnavailable", "Checkout server unavailable");
       }
 
       document.getElementById("kasse-form").addEventListener("submit", async function (ev) {
         ev.preventDefault();
+        if (!i18nReady()) return;
+
         var btn = document.getElementById("pay-btn");
         var errEl = document.getElementById("checkout-error");
         var planData = window.ATELIER_I18N.checkoutPlan(plan);
         errEl.classList.add("hidden");
         btn.disabled = true;
-        btn.textContent = window.ATELIER_I18N.t("checkout.payRedirect");
+        btn.textContent = t("checkout.payRedirect", "Weiterleitung zu Stripe…");
 
         var fd = new FormData(ev.target);
         try {
           var res = await fetch("/api/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
             body: JSON.stringify({
               plan: plan,
               email: fd.get("em"),
@@ -110,11 +133,19 @@
               productDescription: planData.desc
             })
           });
+
+          var ct = res.headers.get("content-type") || "";
+          if (!ct.includes("application/json")) {
+            throw new Error(t("checkout.apiUnavailable", "Checkout server unavailable"));
+          }
+
           var json = await res.json();
-          if (!res.ok) throw new Error(json.error || window.ATELIER_I18N.t("checkout.checkoutFailed"));
-          location.href = json.url;
+          if (!res.ok) throw new Error(checkoutErrorMessage(json, res));
+          if (!json.url) throw new Error(t("checkout.noStripeUrl", "Stripe URL missing"));
+
+          window.location.assign(json.url);
         } catch (e) {
-          errEl.textContent = e.message;
+          errEl.textContent = e && e.message ? e.message : t("checkout.checkoutFailed", "Checkout failed");
           errEl.classList.remove("hidden");
           btn.disabled = false;
           btn.innerHTML = payBtnHtml(planData.price);
