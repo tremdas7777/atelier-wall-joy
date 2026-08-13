@@ -84,8 +84,10 @@ export const Route = createFileRoute("/api/checkout")({
             amountCents: selected.cents,
             eurAmountCents: selected.eurCents,
             locale: pricing.stripeLocale,
-            productName: productName?.trim() || undefined,
-            productDescription: productDescription?.trim() || undefined,
+            ...(productName?.trim() ? { productName: productName.trim() } : {}),
+            ...(productDescription?.trim()
+              ? { productDescription: productDescription.trim() }
+              : {}),
           });
 
           await createOrder({
