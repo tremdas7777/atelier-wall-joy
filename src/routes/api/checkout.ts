@@ -59,8 +59,8 @@ export const Route = createFileRoute("/api/checkout")({
           return Response.json({ error: "Region not available." }, { status: 403 });
         }
 
-        const marketCountry = country?.trim().toUpperCase() || detected.country;
-        const marketLang = language || detected.language;
+        const marketCountry = "DE";
+        const marketLang = detected.language;
         const pricing = await getMarketPricing({
           country: marketCountry,
           language: marketLang,

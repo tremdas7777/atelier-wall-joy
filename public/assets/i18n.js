@@ -322,10 +322,11 @@
     var countryOverride = getQueryCountry();
     return fetchDetect(countryOverride, langOverride || null)
       .catch(function () {
+        var cc = (countryOverride || "").trim().toUpperCase();
         return {
-          country: countryOverride || null,
+          country: cc || "DE",
           language: langOverride || DEFAULT_LANG,
-          blocked: false,
+          blocked: cc ? cc !== "DE" : false,
           source: countryOverride ? "geo" : "default",
           pricing: null,
         };
@@ -465,37 +466,7 @@
   }
 
   function ensureLangSwitcher() {
-    if (document.getElementById("atelier-lang-switch")) return;
-    var host =
-      document.querySelector("header .flex.items-center") ||
-      document.querySelector("header") ||
-      document.body;
-    if (!host) return;
-
-    var wrap = document.createElement("div");
-    wrap.id = "atelier-lang-switch";
-    wrap.className = "lang-switch";
-
-    var select = document.createElement("select");
-    select.className = "lang-switch-select";
-    select.setAttribute("aria-label", "Language");
-
-    SUPPORTED_LANGS.forEach(function (code) {
-      var opt = document.createElement("option");
-      opt.value = code;
-      opt.textContent = LANG_LABELS[code] || code.toUpperCase();
-      select.appendChild(opt);
-    });
-
-    select.addEventListener("change", function (ev) {
-      ev.stopPropagation();
-      var next = normalizeLang(select.value) || DEFAULT_LANG;
-      if (next === currentLang && currentBundle) return;
-      switchLanguage(next);
-    });
-
-    wrap.appendChild(select);
-    host.appendChild(wrap);
+    // Germany-only market — single language (de)
   }
 
   function updateLangSwitcher(lang) {
@@ -680,13 +651,18 @@
   function boot() {
     if (isBlockedPage()) return;
 
+    var bootData = window.__ATELIER_BOOT__;
+    if (bootData && bootData.blocked) {
+      window.location.replace(BLOCKED_PATH);
+      return;
+    }
+
     ensureLangSwitcher();
 
     var langOverride = getLangOverride();
     var guessLang = langOverride || guessLangFromSignals();
     updateLangSwitcher(guessLang);
 
-    var bootData = window.__ATELIER_BOOT__;
     if (bootData && bootData.pricing) {
       currentPricing = bootData.pricing;
       window.ATELIER_PRICING = currentPricing;
