@@ -29,6 +29,12 @@ export function getProductPublicUrl(plan: Plan): string {
   return `/products/${PRODUCT_PATHS[plan]}`;
 }
 
+/**
+ * Lieferung erfolgt über einen Google-Drive-Ordner (kein ZIP-Download mehr).
+ */
+export const DELIVERY_URL =
+  "https://drive.google.com/drive/folders/147qI81faerUx0_jbH0yClZoKwLmRm_CF";
+
 async function localProductStat(plan: Plan) {
   try {
     const { stat } = await import("node:fs/promises");
@@ -450,7 +456,7 @@ export function planDisplayName(plan: string) {
 
 export function orderDownloadUrl(order: { plan: string; status: string }) {
   if (order.status !== "paid") return null;
-  return getProductPublicUrl(normalizeProductPlan(order.plan));
+  return DELIVERY_URL;
 }
 
 export function isTokenValid(order: {
@@ -517,17 +523,9 @@ export async function fulfillPaidOrder(
     status: "paid",
   });
 
-  const hasFile = await productFileExists(order.plan as Plan);
-  if (!hasFile) {
-    await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, {
-      order_uid: order.order_uid,
-    });
-    return order;
-  }
-
   await trackCheckoutEvent("download_ready", order.plan, order.email, {
     order_uid: order.order_uid,
-    download_url: getProductPublicUrl(order.plan as Plan),
+    download_url: DELIVERY_URL,
   });
 
   return order;
@@ -536,16 +534,27 @@ export async function fulfillPaidOrder(
 /* ---------------- Products (local files + optional Supabase Storage) ---------------- */
 
 export async function productFileExists(plan: Plan): Promise<boolean> {
+  if (await storageProductStat(plan)) return true;
   const local = await localProductStat(plan);
-  if (local.exists) return true;
-  if (!hasSupabaseAdmin()) return false;
+  return local.exists;
+}
+
+async function storageProductStat(plan: Plan) {
+  if (!hasSupabaseAdmin()) return null;
   const dir = plan;
   const file = PRODUCT_PATHS[plan].split("/")[1]!;
-  const { data, error } = await admin()
-    .storage.from(PRODUCTS_BUCKET)
-    .list(dir, { limit: 100, search: file });
-  if (error) return false;
-  return (data ?? []).some((f) => f.name === file);
+  try {
+    const { data, error } = await admin()
+      .storage.from(PRODUCTS_BUCKET)
+      .list(dir, { limit: 100, search: file });
+    if (error || !data) return null;
+    const entry = data.find((f) => f.name === file);
+    if (!entry) return null;
+    const sizeBytes = (entry.metadata as { size?: number } | null)?.size ?? 0;
+    return { file, sizeBytes, updatedAt: entry.updated_at as string | undefined };
+  } catch {
+    return null;
+  }
 }
 
 function formatBytes(bytes?: number) {
@@ -562,6 +571,19 @@ function formatBytes(bytes?: number) {
 
 export async function getProductInfo(plan: Plan) {
   const label = PRODUCT_LABELS[plan];
+  const remote = await storageProductStat(plan);
+  if (remote) {
+    return {
+      plan,
+      label,
+      exists: true,
+      filename: remote.file,
+      sizeBytes: remote.sizeBytes,
+      sizeHuman: formatBytes(remote.sizeBytes),
+      updatedAt: remote.updatedAt,
+      relativePath: PRODUCT_PATHS[plan],
+    };
+  }
   const local = await localProductStat(plan);
   if (local.exists) {
     return {
@@ -575,29 +597,7 @@ export async function getProductInfo(plan: Plan) {
       relativePath: PRODUCT_PATHS[plan],
     };
   }
-  if (!hasSupabaseAdmin()) {
-    return { plan, label, exists: false };
-  }
-  const dir = plan;
-  const file = PRODUCT_PATHS[plan].split("/")[1]!;
-  const { data, error } = await admin()
-    .storage.from(PRODUCTS_BUCKET)
-    .list(dir, { limit: 100, search: file });
-  if (error || !data || !data.some((f) => f.name === file)) {
-    return { plan, label, exists: false };
-  }
-  const entry = data.find((f) => f.name === file)!;
-  const sizeBytes = (entry.metadata as { size?: number } | null)?.size ?? 0;
-  return {
-    plan,
-    label,
-    exists: true,
-    filename: file,
-    sizeBytes,
-    sizeHuman: formatBytes(sizeBytes),
-    updatedAt: entry.updated_at,
-    relativePath: PRODUCT_PATHS[plan],
-  };
+  return { plan, label, exists: false };
 }
 
 export async function listProductsInfo() {
@@ -605,20 +605,82 @@ export async function listProductsInfo() {
 }
 
 export async function uploadProduct(plan: Plan, fileBuffer: ArrayBuffer, contentType: string) {
-  const { writeFile, mkdir } = await import("node:fs/promises");
-  const { join, dirname } = await import("node:path");
-  const localPath = join(process.cwd(), localProductAbsolutePath(plan));
-  await mkdir(dirname(localPath), { recursive: true });
-  await writeFile(localPath, Buffer.from(fileBuffer));
+  if (!hasSupabaseAdmin()) {
+    throw new Error("Speicher nicht konfiguriert — Upload nicht möglich.");
+  }
+  // Storage is the source of truth: local disk is ephemeral and lost on redeploy.
+  const path = PRODUCT_PATHS[plan];
+  const { error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .upload(path, fileBuffer, { contentType: contentType || "application/zip", upsert: true });
+  if (error) {
+    throw new Error(`Upload fehlgeschlagen: ${error.message}`);
+  }
 
-  if (hasSupabaseAdmin()) {
-    const path = PRODUCT_PATHS[plan];
-    await admin()
-      .storage.from(PRODUCTS_BUCKET)
-      .upload(path, fileBuffer, { contentType, upsert: true });
+  // Best-effort local copy (speeds up downloads while this instance lives).
+  try {
+    const { writeFile, mkdir } = await import("node:fs/promises");
+    const { join, dirname } = await import("node:path");
+    const localPath = join(process.cwd(), localProductAbsolutePath(plan));
+    await mkdir(dirname(localPath), { recursive: true });
+    await writeFile(localPath, Buffer.from(fileBuffer));
+  } catch {
+    /* ephemeral filesystem — ignore */
   }
 
   return getProductInfo(plan);
+}
+
+/* ---------------- Resumable upload (TUS) ---------------- */
+
+/**
+ * Ensures the products bucket accepts large files (up to 5 GB).
+ * Uses the Storage REST API — not SQL — so it works within Lovable Cloud constraints.
+ * Idempotent: safe to call before every upload.
+ */
+export async function ensureBucketFileSizeLimit(): Promise<void> {
+  if (!hasSupabaseAdmin()) return;
+  try {
+    const { error } = await admin().storage.updateBucket(PRODUCTS_BUCKET, {
+      public: false,
+      fileSizeLimit: 5_368_709_120, // 5 GB
+      allowedMimeTypes: ["application/zip", "application/x-zip-compressed"],
+    } as any);
+    if (error) console.error("ensureBucketFileSizeLimit:", error.message);
+  } catch (e) {
+    console.error("ensureBucketFileSizeLimit:", e);
+  }
+}
+
+/**
+ * Creates a short-lived signed upload token that the browser uses with
+ * tus-js-client to upload directly to Supabase Storage — bypassing the
+ * Cloudflare Worker's 100 MB request-body limit entirely.
+ */
+export async function createSignedUploadToken(plan: Plan) {
+  if (!hasSupabaseAdmin()) {
+    throw new Error("Speicher nicht konfiguriert — Upload nicht möglich.");
+  }
+  await ensureBucketFileSizeLimit();
+  const path = PRODUCT_PATHS[plan];
+  const { data, error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .createSignedUploadUrl(path, { upsert: true } as any);
+  if (error || !data) {
+    throw new Error(
+      `Signed-Upload-Token fehlgeschlagen: ${error?.message ?? "unbekannt"}`,
+    );
+  }
+  const supabaseUrl = process.env["SUPABASE_URL"]!;
+  const projectId = supabaseUrl.replace(/^https?:\/\/([^.]+)\..*$/, "$1");
+  const endpoint = `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
+  return {
+    token: (data as any).token as string,
+    endpoint,
+    bucketName: PRODUCTS_BUCKET,
+    objectName: path,
+    contentType: "application/zip",
+  };
 }
 
 export async function streamLocalProduct(plan: Plan): Promise<Response> {
@@ -640,18 +702,16 @@ export async function streamLocalProduct(plan: Plan): Promise<Response> {
 }
 
 export async function createDownloadSignedUrl(plan: Plan, expiresIn = 60) {
-  if (await productFileExists(plan)) {
-    return getProductPublicUrl(plan);
+  if (hasSupabaseAdmin() && (await storageProductStat(plan))) {
+    const path = PRODUCT_PATHS[plan];
+    const { data, error } = await admin()
+      .storage.from(PRODUCTS_BUCKET)
+      .createSignedUrl(path, expiresIn, { download: PRODUCT_PATHS[plan].split("/")[1]! });
+    if (!error && data?.signedUrl) return data.signedUrl;
   }
-  if (!hasSupabaseAdmin()) {
-    throw new Error("Download-URL konnte nicht erstellt werden.");
-  }
-  const path = PRODUCT_PATHS[plan];
-  const { data, error } = await admin()
-    .storage.from(PRODUCTS_BUCKET)
-    .createSignedUrl(path, expiresIn, { download: PRODUCT_PATHS[plan].split("/")[1]! });
-  if (error || !data?.signedUrl) throw new Error("Download-URL konnte nicht erstellt werden.");
-  return data.signedUrl;
+  const local = await localProductStat(plan);
+  if (local.exists) return getProductPublicUrl(plan);
+  throw new Error("Download-URL konnte nicht erstellt werden.");
 }
 
 /* ---------------- Stripe (raw REST, edge-safe) ---------------- */
@@ -728,7 +788,7 @@ export async function sendMetaPixelPurchase(args: {
   if (!cfg.enabled || !cfg.pixelId || !token) return;
 
   const userData: Record<string, string[]> = {};
-  if (args.email) userData.em = [hashMetaUserData(args.email)];
+  if (args.email) userData["em"] = [hashMetaUserData(args.email)];
 
   const payload = {
     data: [
@@ -889,16 +949,16 @@ export async function getOrderCheckoutContext(orderUid: string) {
     .limit(100);
 
   const row = (data ?? []).find(
-    (r) => (r.metadata as Record<string, unknown> | null)?.order_uid === orderUid,
+    (r) => (r.metadata as Record<string, unknown> | null)?.["order_uid"] === orderUid,
   );
   if (!row?.metadata) return empty;
 
   const meta = row.metadata as Record<string, unknown>;
   return {
-    tracking: normalizeUtmifyTracking(meta.tracking),
-    country: typeof meta.country === "string" ? meta.country.toUpperCase() : null,
-    customerIp: typeof meta.customer_ip === "string" ? meta.customer_ip : null,
-    productName: typeof meta.product_name === "string" ? meta.product_name : null,
+    tracking: normalizeUtmifyTracking(meta["tracking"]),
+    country: typeof meta["country"] === "string" ? (meta["country"] as string).toUpperCase() : null,
+    customerIp: typeof meta["customer_ip"] === "string" ? (meta["customer_ip"] as string) : null,
+    productName: typeof meta["product_name"] === "string" ? (meta["product_name"] as string) : null,
   };
 }
 
@@ -1312,7 +1372,7 @@ export function buildOrderStatus(
   opts?: { downloadReady?: boolean },
 ) {
   const paid = order.status === "paid";
-  const fileReady = opts?.downloadReady ?? paid;
+  const fileReady = paid;
   return {
     status: order.status,
     email: order.email,
@@ -1335,9 +1395,7 @@ export async function buildOrderStatusWithDelivery(
   },
   baseUrl: string,
 ) {
-  const paid = order.status === "paid";
-  const fileReady = paid ? await productFileExists(order.plan as Plan) : false;
-  return buildOrderStatus(order, baseUrl, { downloadReady: fileReady });
+  return buildOrderStatus(order, baseUrl);
 }
 
 export async function buildStatusFromStripeSession(
@@ -1351,7 +1409,6 @@ export async function buildStatusFromStripeSession(
   },
 ) {
   const plan = normalizeProductPlan(session.metadata?.plan);
-  const fileReady = await productFileExists(plan);
   return {
     status: "paid",
     email: session.customer_email || "",
@@ -1359,8 +1416,8 @@ export async function buildStatusFromStripeSession(
     planName: planDisplayName(plan),
     orderUid: session.metadata?.order_uid || session.client_reference_id || session.id,
     paid: true,
-    downloadUrl: fileReady ? getProductPublicUrl(plan) : null,
-    downloadReady: fileReady,
+    downloadUrl: DELIVERY_URL,
+    downloadReady: true,
   };
 }
 
