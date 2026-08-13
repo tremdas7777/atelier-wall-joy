@@ -111,7 +111,10 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   store_name: "Atelier Wallpapers",
   support_email: "kontakt@atelierwallpapers.de",
   meta_pixel_id: "",
+  meta_pixel_access_token: "",
   meta_pixel_enabled: "0",
+  utmify_api_token: "",
+  utmify_enabled: "0",
 };
 
 const SETTINGS_FILE = ".data/settings.json";
@@ -491,6 +494,29 @@ export async function fulfillPaidOrder(
   order = await getOrderBySessionId(session.id);
   if (!order) throw new Error("Bestellung nach Erfüllung nicht gefunden.");
 
+  void sendMetaPixelPurchase({
+    eventId: session.id,
+    email: order.email,
+    value: (order.amount_cents || 0) / 100,
+    currency: order.currency || "eur",
+    plan: order.plan,
+    orderId: order.order_uid,
+  });
+
+  void sendUtmifyOrder({
+    order: {
+      order_uid: order.order_uid,
+      email: order.email,
+      customer_name: order.customer_name,
+      plan: order.plan,
+      amount_cents: order.amount_cents,
+      currency: order.currency,
+      created_at: order.created_at,
+      paid_at: order.paid_at,
+    },
+    status: "paid",
+  });
+
   const hasFile = await productFileExists(order.plan as Plan);
   if (!hasFile) {
     await trackCheckoutEvent("delivery_missing_file", order.plan, order.email, {
@@ -656,20 +682,340 @@ export function normalizeMetaPixelId(raw: string | undefined | null): string | n
   return id.length >= 10 && id.length <= 20 ? id : null;
 }
 
+export function normalizeMetaPixelAccessToken(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const token = String(raw).trim();
+  return token.length >= 20 && token.length <= 512 ? token : null;
+}
+
+export async function metaPixelAccessToken(): Promise<string> {
+  const fromDb = (await getSetting("meta_pixel_access_token", "")).trim();
+  return fromDb || process.env["META_PIXEL_ACCESS_TOKEN"] || "";
+}
+
 export async function metaPixelConfig(): Promise<{ enabled: boolean; pixelId: string | null }> {
-  const enabled = (await getSetting("meta_pixel_enabled", "0")).trim() === "1";
+  const toggle = (await getSetting("meta_pixel_enabled", "0")).trim() === "1";
   const fromSetting = normalizeMetaPixelId(await getSetting("meta_pixel_id", ""));
   const fromEnv = normalizeMetaPixelId(process.env["META_PIXEL_ID"]);
   const pixelId = fromSetting || fromEnv;
+  const token = normalizeMetaPixelAccessToken(await metaPixelAccessToken());
+  const ready = toggle && Boolean(pixelId) && Boolean(token);
   return {
-    enabled: enabled && Boolean(pixelId),
-    pixelId: enabled && pixelId ? pixelId : null,
+    enabled: ready,
+    pixelId: ready && pixelId ? pixelId : null,
   };
 }
 
 export async function isMetaPixelConfigured(): Promise<boolean> {
   const cfg = await metaPixelConfig();
   return cfg.enabled && Boolean(cfg.pixelId);
+}
+
+function hashMetaUserData(value: string): string {
+  return createHash("sha256").update(value.trim().toLowerCase()).digest("hex");
+}
+
+export async function sendMetaPixelPurchase(args: {
+  eventId: string;
+  email?: string | null;
+  value: number;
+  currency: string;
+  plan: string;
+  orderId: string;
+}) {
+  const cfg = await metaPixelConfig();
+  const token = normalizeMetaPixelAccessToken(await metaPixelAccessToken());
+  if (!cfg.enabled || !cfg.pixelId || !token) return;
+
+  const userData: Record<string, string[]> = {};
+  if (args.email) userData.em = [hashMetaUserData(args.email)];
+
+  const payload = {
+    data: [
+      {
+        event_name: "Purchase",
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: args.eventId,
+        action_source: "website",
+        user_data: userData,
+        custom_data: {
+          currency: args.currency.toUpperCase(),
+          value: args.value,
+          content_ids: [args.plan],
+          order_id: args.orderId,
+        },
+      },
+    ],
+  };
+
+  try {
+    const url = `https://graph.facebook.com/v21.0/${cfg.pixelId}/events?access_token=${encodeURIComponent(token)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("meta pixel capi error:", res.status, text);
+    }
+  } catch (err) {
+    console.error("meta pixel capi error:", err);
+  }
+}
+
+/* ---------------- Utmify ---------------- */
+
+export type UtmifyTrackingParams = {
+  src: string | null;
+  sck: string | null;
+  utm_source: string | null;
+  utm_campaign: string | null;
+  utm_medium: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+};
+
+export type UtmifyOrderStatus =
+  | "waiting_payment"
+  | "paid"
+  | "refused"
+  | "refunded"
+  | "chargedback";
+
+const UTMIFY_PLATFORM = "AtelierWallpapers";
+
+function emptyUtmifyTracking(): UtmifyTrackingParams {
+  return {
+    src: null,
+    sck: null,
+    utm_source: null,
+    utm_campaign: null,
+    utm_medium: null,
+    utm_content: null,
+    utm_term: null,
+  };
+}
+
+export function normalizeUtmifyTracking(raw: unknown): UtmifyTrackingParams {
+  const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const pick = (key: keyof UtmifyTrackingParams) => {
+    const v = r[key];
+    if (v == null || v === "") return null;
+    const s = String(v).trim();
+    return s || null;
+  };
+  return {
+    src: pick("src"),
+    sck: pick("sck"),
+    utm_source: pick("utm_source"),
+    utm_campaign: pick("utm_campaign"),
+    utm_medium: pick("utm_medium"),
+    utm_content: pick("utm_content"),
+    utm_term: pick("utm_term"),
+  };
+}
+
+export function normalizeUtmifyApiToken(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  const token = String(raw).trim();
+  return token.length >= 20 && token.length <= 512 ? token : null;
+}
+
+export async function utmifyApiToken(): Promise<string> {
+  const fromDb = (await getSetting("utmify_api_token", "")).trim();
+  return fromDb || process.env["UTMIFY_API_TOKEN"] || "";
+}
+
+export async function isUtmifyConfigured(): Promise<boolean> {
+  const toggle = (await getSetting("utmify_enabled", "0")).trim() === "1";
+  const token = normalizeUtmifyApiToken(await utmifyApiToken());
+  return toggle && Boolean(token);
+}
+
+export function resolveClientIp(request: Request): string | null {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]?.trim() || null;
+  return request.headers.get("x-real-ip")?.trim() || null;
+}
+
+export function formatUtmifyUtc(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+
+function utmifyCommissionCurrency(code: string): string {
+  const c = code.toUpperCase();
+  const allowed = new Set([
+    "BRL",
+    "USD",
+    "EUR",
+    "GBP",
+    "ARS",
+    "CAD",
+    "COP",
+    "MXN",
+    "PYG",
+    "CLP",
+    "PEN",
+    "PLN",
+  ]);
+  return allowed.has(c) ? c : "EUR";
+}
+
+function utmifyProductMeta(plan: string, productName?: string | null) {
+  if (plan === "premium") {
+    const name = productName?.trim() || "Premium Collection";
+    return { id: "premium", name, planId: "premium", planName: name };
+  }
+  const name = productName?.trim() || "Essential Collection";
+  return { id: "essentiell", name, planId: "essentiell", planName: name };
+}
+
+export async function getOrderCheckoutContext(orderUid: string) {
+  const empty = {
+    tracking: emptyUtmifyTracking(),
+    country: null as string | null,
+    customerIp: null as string | null,
+    productName: null as string | null,
+  };
+  if (!hasSupabaseAdmin()) return empty;
+
+  const { data } = await admin()
+    .from("checkout_events")
+    .select("metadata")
+    .eq("event_type", "checkout_created")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const row = (data ?? []).find(
+    (r) => (r.metadata as Record<string, unknown> | null)?.order_uid === orderUid,
+  );
+  if (!row?.metadata) return empty;
+
+  const meta = row.metadata as Record<string, unknown>;
+  return {
+    tracking: normalizeUtmifyTracking(meta.tracking),
+    country: typeof meta.country === "string" ? meta.country.toUpperCase() : null,
+    customerIp: typeof meta.customer_ip === "string" ? meta.customer_ip : null,
+    productName: typeof meta.product_name === "string" ? meta.product_name : null,
+  };
+}
+
+type UtmifyOrderRow = {
+  order_uid: string;
+  email: string;
+  customer_name: string | null;
+  plan: string;
+  amount_cents: number;
+  currency: string;
+  created_at: string;
+  paid_at?: string | null;
+};
+
+function buildUtmifyOrderPayload(args: {
+  order: UtmifyOrderRow;
+  status: UtmifyOrderStatus;
+  tracking: UtmifyTrackingParams;
+  country?: string | null;
+  customerIp?: string | null;
+  productName?: string | null;
+}) {
+  const product = utmifyProductMeta(args.order.plan, args.productName);
+  const total = args.order.amount_cents || 0;
+  const createdAt = formatUtmifyUtc(args.order.created_at);
+  const approvedDate =
+    args.status === "paid"
+      ? formatUtmifyUtc(args.order.paid_at || new Date())
+      : null;
+
+  return {
+    orderId: args.order.order_uid,
+    platform: UTMIFY_PLATFORM,
+    paymentMethod: "credit_card" as const,
+    status: args.status,
+    createdAt,
+    approvedDate,
+    refundedAt: null,
+    customer: {
+      name: args.order.customer_name?.trim() || args.order.email.split("@")[0] || "Customer",
+      email: args.order.email,
+      phone: null,
+      document: null,
+      country: (args.country || "DE").toUpperCase().slice(0, 2),
+      ip: args.customerIp || undefined,
+    },
+    products: [
+      {
+        id: product.id,
+        name: product.name,
+        planId: product.planId,
+        planName: product.planName,
+        quantity: 1,
+        priceInCents: total,
+      },
+    ],
+    trackingParameters: args.tracking,
+    commission: {
+      totalPriceInCents: total,
+      gatewayFeeInCents: 0,
+      userCommissionInCents: total,
+      currency: utmifyCommissionCurrency(args.order.currency || "eur"),
+    },
+    isTest: false,
+  };
+}
+
+export async function sendUtmifyOrder(args: {
+  order: UtmifyOrderRow;
+  status: UtmifyOrderStatus;
+  tracking?: UtmifyTrackingParams;
+  country?: string | null;
+  customerIp?: string | null;
+  productName?: string | null;
+}) {
+  if (!(await isUtmifyConfigured())) return;
+  const token = normalizeUtmifyApiToken(await utmifyApiToken());
+  if (!token) return;
+
+  let tracking = args.tracking || emptyUtmifyTracking();
+  let country = args.country ?? null;
+  let customerIp = args.customerIp ?? null;
+  let productName = args.productName ?? null;
+
+  if (!args.tracking) {
+    const ctx = await getOrderCheckoutContext(args.order.order_uid);
+    tracking = ctx.tracking;
+    country = country || ctx.country;
+    customerIp = customerIp || ctx.customerIp;
+    productName = productName || ctx.productName;
+  }
+
+  const payload = buildUtmifyOrderPayload({
+    order: args.order,
+    status: args.status,
+    tracking,
+    country,
+    customerIp,
+    productName,
+  });
+
+  try {
+    const res = await fetch("https://api.utmify.com.br/api-credentials/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-token": token,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("utmify error:", res.status, text);
+    }
+  } catch (err) {
+    console.error("utmify error:", err);
+  }
 }
 
 export async function createCheckoutSession(args: {

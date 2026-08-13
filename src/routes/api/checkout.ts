@@ -21,6 +21,9 @@ export const Route = createFileRoute("/api/checkout")({
           trackCheckoutEvent,
           isStripeConfigured,
           resolveBaseUrl,
+          resolveClientIp,
+          normalizeUtmifyTracking,
+          sendUtmifyOrder,
         } = lib;
 
         let body: {
@@ -31,13 +34,15 @@ export const Route = createFileRoute("/api/checkout")({
           language?: string;
           productName?: string;
           productDescription?: string;
+          tracking?: Record<string, unknown>;
         } = {};
         try {
           body = (await request.json()) as typeof body;
         } catch {
           /* ignore */
         }
-        const { plan, email, name, country, language, productName, productDescription } = body;
+        const { plan, email, name, country, language, productName, productDescription, tracking } =
+          body;
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return Response.json(
             { error: "Gültige E-Mail erforderlich." },
@@ -64,6 +69,8 @@ export const Route = createFileRoute("/api/checkout")({
 
         const baseUrl = resolveBaseUrl(request);
         const orderUid = newOrderUid();
+        const customerIp = resolveClientIp(request);
+        const trackingParams = normalizeUtmifyTracking(tracking);
 
         if (!(await isStripeConfigured())) {
           return Response.json(
@@ -112,6 +119,27 @@ export const Route = createFileRoute("/api/checkout")({
               session_id: session.id,
               country: marketCountry,
               currency: pricing.currency,
+              customer_ip: customerIp,
+              product_name: productName?.trim() || null,
+              tracking: trackingParams,
+            });
+
+            void sendUtmifyOrder({
+              order: {
+                order_uid: orderUid,
+                email: email.trim().toLowerCase(),
+                customer_name: (name || "").trim() || null,
+                plan: normalizedPlan,
+                amount_cents: selected.cents,
+                currency: pricing.currency.toLowerCase(),
+                created_at: new Date().toISOString(),
+                paid_at: null,
+              },
+              status: "waiting_payment",
+              tracking: trackingParams,
+              country: marketCountry,
+              customerIp,
+              productName: productName?.trim() || null,
             });
           } catch (persistErr) {
             console.error("checkout persist warning:", persistErr);

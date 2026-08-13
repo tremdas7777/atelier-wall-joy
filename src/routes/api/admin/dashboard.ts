@@ -5,7 +5,7 @@ export const Route = createFileRoute("/api/admin/dashboard")({
     handlers: {
       GET: async ({ request }) => {
         const lib = await import("@/lib/atelier.server");
-        const { isAdminAuthorized, countOrdersByStatus, getAnalytics, getLiveFeed, todayStats, isStripeConfigured, isMetaPixelConfigured, productFileExists } = lib;
+        const { isAdminAuthorized, countOrdersByStatus, getAnalytics, getLiveFeed, todayStats, isStripeConfigured, isMetaPixelConfigured, isUtmifyConfigured, productFileExists } = lib;
         if (!isAdminAuthorized(request)) {
           return Response.json({ error: "Não autenticado." }, { status: 401 });
         }
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/admin/dashboard")({
           today,
           stripeConfigured: await isStripeConfigured(),
           metaPixelConfigured: await isMetaPixelConfigured(),
+          utmifyConfigured: await isUtmifyConfigured(),
           products: {
             essentiell: await productFileExists("essentiell"),
             premium: await productFileExists("premium"),

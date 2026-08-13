@@ -118,11 +118,20 @@
           <p class="hint">Sem checkout? Adicione <code>STRIPE_SECRET_KEY</code> nos segredos do Lovable (ou salve aqui com <code>SUPABASE_SERVICE_ROLE_KEY</code> ativo).</p>
 
           <h3>Meta / Facebook Pixel</h3>
-          <p class="hint">Cole o ID numérico do pixel (Events Manager → Fontes de dados → Pixel). Ative para rastrear PageView, AddToCart, InitiateCheckout e Purchase.</p>
+          <p class="hint">Events Manager → Fontes de dados → Pixel: copie o <strong>Pixel ID</strong> e o <strong>token de acesso</strong> (Conversions API). Ambos são obrigatórios.</p>
           <label>Pixel ID<input name="meta_pixel_id" inputmode="numeric" placeholder="123456789012345" autocomplete="off"/></label>
+          <label>Access Token<input name="meta_pixel_access_token" type="password" placeholder="EAA…" autocomplete="off"/></label>
           <label class="checkbox-row">
             <input type="checkbox" name="meta_pixel_enabled" value="1"/>
             <span>Ativar Meta Pixel no site</span>
+          </label>
+
+          <h3>Utmify</h3>
+          <p class="hint">Integrações → Webhooks → Credenciais de API na Utmify. Envia pedidos (aguardando pagamento e pago) com UTMs para rastrear campanhas e receber notificações.</p>
+          <label>API Token<input name="utmify_api_token" type="password" placeholder="KVRx…" autocomplete="off"/></label>
+          <label class="checkbox-row">
+            <input type="checkbox" name="utmify_enabled" value="1"/>
+            <span>Ativar Utmify</span>
           </label>
 
           <h3>Produtos (upload ZIP)</h3>

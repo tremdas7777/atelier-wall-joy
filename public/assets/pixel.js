@@ -117,6 +117,10 @@
     if (data.value != null && !isNaN(data.value)) params.value = Number(data.value);
     if (data.orderId) params.order_id = String(data.orderId);
     if (data.plan) params.content_ids = [data.plan];
+    if (data.eventId && window.fbq) {
+      window.fbq("track", "Purchase", params, { eventID: String(data.eventId) });
+      return;
+    }
     track("Purchase", params);
   }
 

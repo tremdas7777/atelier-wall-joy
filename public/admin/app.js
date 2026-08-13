@@ -182,6 +182,7 @@
     $("#system-list").innerHTML = [
       `<li><span>Stripe configurado</span><strong>${d.stripeConfigured ? "Sim" : "Não"}</strong></li>`,
       `<li><span>Meta Pixel ativo</span><strong>${d.metaPixelConfigured ? "Sim" : "Não"}</strong></li>`,
+      `<li><span>Utmify ativo</span><strong>${d.utmifyConfigured ? "Sim" : "Não"}</strong></li>`,
       `<li><span>ZIP Essencial</span><strong>${d.products.essentiell ? "Sim" : "Não"}</strong></li>`,
       `<li><span>ZIP Premium</span><strong>${d.products.premium ? "Sim" : "Não"}</strong></li>`,
     ].join("");
@@ -329,6 +330,7 @@
     const fd = new FormData(ev.target);
     const body = Object.fromEntries(fd.entries());
     body.meta_pixel_enabled = fd.get("meta_pixel_enabled") ? "1" : "0";
+    body.utmify_enabled = fd.get("utmify_enabled") ? "1" : "0";
     const btn = ev.target.querySelector('button[type="submit"]');
     const msg = $("#settings-msg");
     if (btn) {
@@ -361,11 +363,17 @@
         "stripe_publishable_key",
         "stripe_secret_key",
         "stripe_webhook_secret",
+        "meta_pixel_access_token",
+        "utmify_api_token",
       ]);
       Object.entries(d.settings).forEach(([key, val]) => {
         const input = form.elements.namedItem(key);
         if (!input) return;
         if (key === "meta_pixel_enabled") {
+          input.checked = val === "1";
+          return;
+        }
+        if (key === "utmify_enabled") {
           input.checked = val === "1";
           return;
         }

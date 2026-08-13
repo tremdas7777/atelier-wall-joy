@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/styles.css"/>
   <link rel="stylesheet" href="assets/de.css"/>
   <script src="assets/i18n-boot.js"></script>
+  <script src="assets/utm.js"></script>
   <script src="assets/pixel.js" defer></script>
 </head>
 <body class="legal-page text-foreground" data-i18n-page="checkout">
@@ -131,7 +132,8 @@
               country: window.ATELIER_I18N.getCountry(),
               language: window.ATELIER_I18N.getLang(),
               productName: planData.name,
-              productDescription: planData.desc
+              productDescription: planData.desc,
+              tracking: window.ATELIER_UTM ? window.ATELIER_UTM.get() : null
             })
           });
 
