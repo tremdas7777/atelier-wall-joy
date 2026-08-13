@@ -164,10 +164,6 @@ export const Route = createFileRoute("/api/checkout")({
           );
         }
       },
-      GET: async () => {
-        const { isStripeConfigured } = await import("@/lib/atelier.server");
-        return Response.json({ ready: await isStripeConfigured() });
-      },
     },
   },
 });
