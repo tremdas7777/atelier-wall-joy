@@ -5,6 +5,12 @@
   var MANUAL_KEY = "atelier-lang-manual";
   var DEFAULT_LANG = "de";
   var FALLBACK_LANG = "en";
+
+  try {
+    sessionStorage.removeItem("atelier-detect-v1");
+  } catch {
+    /* ignore stale geo-block cache */
+  }
   var BLOCKED_PATH = "unavailable.html";
 
   var SUPPORTED_LANGS = [
@@ -27,7 +33,7 @@
   var socialManifest = null;
   var switchSeq = 0;
   var bootSeq = 0;
-  var DETECT_CACHE_KEY = "atelier-detect-v1";
+  var DETECT_CACHE_KEY = "atelier-detect-v2";
   var DETECT_CACHE_TTL = 300000;
 
   var COUNTRY_PRIMARY_LANG = {
@@ -134,6 +140,8 @@
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (!parsed || !parsed.payload || Date.now() - parsed.ts > DETECT_CACHE_TTL) return null;
+      parsed.payload.blocked = false;
+      parsed.payload.country = "DE";
       return parsed.payload;
     } catch (e) {
       return null;
@@ -144,7 +152,10 @@
     try {
       sessionStorage.setItem(
         DETECT_CACHE_KEY,
-        JSON.stringify({ ts: Date.now(), payload: det }),
+        JSON.stringify({
+          ts: Date.now(),
+          payload: Object.assign({}, det, { blocked: false, country: "DE" }),
+        }),
       );
     } catch (e) {}
   }
@@ -301,44 +312,16 @@
     });
   }
 
-  function clientGeoCountry() {
-    return fetch("https://ipapi.co/country_code/", {
-      credentials: "omit",
-      signal: typeof AbortSignal !== "undefined" ? AbortSignal.timeout(2500) : undefined,
-    })
-      .then(function (res) {
-        return res.ok ? res.text() : Promise.reject();
-      })
-      .then(function (code) {
-        code = (code || "").trim().toUpperCase();
-        return code.length === 2 ? code : null;
-      })
-      .catch(function () {
-        return null;
-      });
-  }
-
   function resolveLocale(langOverride) {
-    var countryOverride = getQueryCountry();
-    return fetchDetect(countryOverride, langOverride || null)
-      .catch(function () {
-        return {
-          country: "DE",
-          language: langOverride || DEFAULT_LANG,
-          blocked: false,
-          source: "default",
-          pricing: null,
-        };
-      })
-      .then(function (det) {
-        if (det.country || det.source !== "default" || langOverride || countryOverride) return det;
-        return clientGeoCountry().then(function (cc) {
-          if (!cc) return det;
-          return fetchDetect(cc, langOverride || null).catch(function () {
-            return det;
-          });
-        });
-      });
+    return fetchDetect(null, langOverride || null).catch(function () {
+      return {
+        country: "DE",
+        language: langOverride || DEFAULT_LANG,
+        blocked: false,
+        source: "default",
+        pricing: null,
+      };
+    });
   }
 
   function formatPriceLabel(planPrice) {

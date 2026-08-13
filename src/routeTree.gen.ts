@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApiCheckoutRouteImport } from './routes/api/checkout'
 import { Route as ApiTrackRouteImport } from './routes/api/track'
+import { Route as IndexHtmlRouteImport } from './routes/index.html'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminDashboardRouteImport } from './routes/api/admin/dashboard'
 import { Route as ApiAdminLiveRouteImport } from './routes/api/admin/live'
@@ -48,6 +49,11 @@ const ApiCheckoutRoute = ApiCheckoutRouteImport.update({
 const ApiTrackRoute = ApiTrackRouteImport.update({
   id: '/api/track',
   path: '/api/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexHtmlRoute = IndexHtmlRouteImport.update({
+  id: '/index/html',
+  path: '/index/html',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
+  '/index/html': typeof IndexHtmlRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/dashboard': typeof ApiAdminDashboardRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
+  '/index/html': typeof IndexHtmlRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/dashboard': typeof ApiAdminDashboardRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/api/checkout': typeof ApiCheckoutRoute
   '/api/track': typeof ApiTrackRoute
+  '/index/html': typeof IndexHtmlRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/dashboard': typeof ApiAdminDashboardRoute
   '/api/admin/live': typeof ApiAdminLiveRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/checkout'
     | '/api/track'
+    | '/index/html'
     | '/api/admin/analytics'
     | '/api/admin/dashboard'
     | '/api/admin/live'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/checkout'
     | '/api/track'
+    | '/index/html'
     | '/api/admin/analytics'
     | '/api/admin/dashboard'
     | '/api/admin/live'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/checkout'
     | '/api/track'
+    | '/index/html'
     | '/api/admin/analytics'
     | '/api/admin/dashboard'
     | '/api/admin/live'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   ApiCheckoutRoute: typeof ApiCheckoutRoute
   ApiTrackRoute: typeof ApiTrackRoute
+  IndexHtmlRoute: typeof IndexHtmlRoute
   ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
   ApiAdminDashboardRoute: typeof ApiAdminDashboardRoute
   ApiAdminLiveRoute: typeof ApiAdminLiveRoute
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/api/track'
       fullPath: '/api/track'
       preLoaderRoute: typeof ApiTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/index/html': {
+      id: '/index/html'
+      path: '/index/html'
+      fullPath: '/index/html'
+      preLoaderRoute: typeof IndexHtmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/analytics': {
@@ -440,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   ApiCheckoutRoute: ApiCheckoutRoute,
   ApiTrackRoute: ApiTrackRoute,
+  IndexHtmlRoute: IndexHtmlRoute,
   ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
   ApiAdminDashboardRoute: ApiAdminDashboardRoute,
   ApiAdminLiveRoute: ApiAdminLiveRoute,
