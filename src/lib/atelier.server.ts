@@ -633,6 +633,58 @@ export async function uploadProduct(plan: Plan, fileBuffer: ArrayBuffer, content
   return getProductInfo(plan);
 }
 
+/* ---------------- Resumable upload (TUS) ---------------- */
+
+/**
+ * Ensures the products bucket accepts large files (up to 5 GB).
+ * Uses the Storage REST API — not SQL — so it works within Lovable Cloud constraints.
+ * Idempotent: safe to call before every upload.
+ */
+export async function ensureBucketFileSizeLimit(): Promise<void> {
+  if (!hasSupabaseAdmin()) return;
+  try {
+    const { error } = await admin().storage.updateBucket(PRODUCTS_BUCKET, {
+      public: false,
+      fileSizeLimit: 5_368_709_120, // 5 GB
+      allowedMimeTypes: ["application/zip", "application/x-zip-compressed"],
+    } as any);
+    if (error) console.error("ensureBucketFileSizeLimit:", error.message);
+  } catch (e) {
+    console.error("ensureBucketFileSizeLimit:", e);
+  }
+}
+
+/**
+ * Creates a short-lived signed upload token that the browser uses with
+ * tus-js-client to upload directly to Supabase Storage — bypassing the
+ * Cloudflare Worker's 100 MB request-body limit entirely.
+ */
+export async function createSignedUploadToken(plan: Plan) {
+  if (!hasSupabaseAdmin()) {
+    throw new Error("Speicher nicht konfiguriert — Upload nicht möglich.");
+  }
+  await ensureBucketFileSizeLimit();
+  const path = PRODUCT_PATHS[plan];
+  const { data, error } = await admin()
+    .storage.from(PRODUCTS_BUCKET)
+    .createSignedUploadUrl(path, { upsert: true } as any);
+  if (error || !data) {
+    throw new Error(
+      `Signed-Upload-Token fehlgeschlagen: ${error?.message ?? "unbekannt"}`,
+    );
+  }
+  const supabaseUrl = process.env["SUPABASE_URL"]!;
+  const projectId = supabaseUrl.replace(/^https?:\/\/([^.]+)\..*$/, "$1");
+  const endpoint = `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
+  return {
+    token: (data as any).token as string,
+    endpoint,
+    bucketName: PRODUCTS_BUCKET,
+    objectName: path,
+    contentType: "application/zip",
+  };
+}
+
 export async function streamLocalProduct(plan: Plan): Promise<Response> {
   const local = await localProductStat(plan);
   if (!local.exists) {
