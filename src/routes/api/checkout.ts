@@ -3,6 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/checkout")({
   server: {
     handlers: {
+      GET: async () => {
+        const { isStripeConfigured } = await import("@/lib/atelier.server");
+        const ready = await isStripeConfigured();
+        return Response.json({ ready });
+      },
       POST: async ({ request }) => {
         const lib = await import("@/lib/atelier.server");
         const { getMarketPricing, planPrice } = await import("@/lib/eu-pricing.server");
