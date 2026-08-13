@@ -165,8 +165,11 @@ export function resolveLanguageForCountry(
       const aliased = LANG_ALIASES[pref];
       if (aliased && candidates.includes(aliased)) return aliased;
     }
-    const primary = candidates[0];
-    return normalizeLangCode(primary) || DEFAULT_LANG;
+    for (const candidate of candidates) {
+      const normalized = normalizeLangCode(candidate);
+      if (normalized) return normalized;
+    }
+    return FALLBACK_LANG;
   }
 
   for (const pref of prefs) {
